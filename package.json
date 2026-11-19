@@ -1,0 +1,19 @@
+{
+  "name": "mamchkin-papchkin-rustore",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Android wrapper for Мамчкин и Папчкин",
+  "scripts": {
+    "prepare:web": "node scripts/prepare-web.mjs",
+    "cap:add:android": "cap add android",
+    "cap:sync": "npm run prepare:web && cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2"
+  }
+}

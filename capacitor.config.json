@@ -1,0 +1,9 @@
+{
+  "appId": "ru.mamchkinpapchkin.app",
+  "appName": "Мамчкин и Папчкин",
+  "webDir": "www",
+  "backgroundColor": "#0f1730",
+  "android": {
+    "allowMixedContent": false
+  }
+}
