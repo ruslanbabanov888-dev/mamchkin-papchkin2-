@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - rustore/capacitor-android-setup
+      - rustore/app-icon
 
 permissions:
   contents: read
@@ -35,6 +36,9 @@ jobs:
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Install app launcher icon
+        run: node scripts/install-android-icon.mjs
 
       - name: Sync Capacitor
         run: npx cap sync android
