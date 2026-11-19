@@ -8,6 +8,7 @@ on:
       - rustore/capacitor-android-setup
       - rustore/app-icon
       - rustore/fix-launcher-icon
+      - rustore/fix-round-launcher-icon
 
 permissions:
   contents: read
@@ -18,44 +19,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
-
       - name: Install dependencies
         run: npm install
-
       - name: Prepare web assets
         run: npm run prepare:web
-
       - name: Add Android platform
         run: npx cap add android
-
       - name: Install app launcher icon
         run: node scripts/install-android-icon.mjs
-
       - name: Sync Capacitor
         run: npx cap sync android
-
       - name: Verify launcher icon resources
         run: |
           test -s android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
           test -s android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          test -s android/app/src/main/res/drawable/ic_launcher_foreground.xml
+          test -s android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          test -s android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
           grep -q 'ic_launcher_foreground' android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-
+          grep -q 'ic_launcher_foreground' android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug
-
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
