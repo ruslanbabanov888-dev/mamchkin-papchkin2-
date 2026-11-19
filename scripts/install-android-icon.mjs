@@ -15,4 +15,4 @@ for (const entry of await readdir(source, { withFileTypes: true })) {
   });
 }
 
-console.log('Installed custom Мамчкин и Папчкин launcher icons.');
+console.log('Installed legacy and adaptive Мамчкин и Папчкин launcher icons.');
