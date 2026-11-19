@@ -4,8 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - main
       - rustore/capacitor-android-setup
       - rustore/app-icon
+      - rustore/fix-launcher-icon
 
 permissions:
   contents: read
@@ -42,6 +44,13 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Verify launcher icon resources
+        run: |
+          test -s android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          test -s android/app/src/main/res/drawable/ic_launcher_foreground.xml
+          grep -q 'ic_launcher_foreground' android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
 
       - name: Build debug APK
         working-directory: android
