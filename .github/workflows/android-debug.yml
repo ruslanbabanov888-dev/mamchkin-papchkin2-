@@ -9,6 +9,7 @@ on:
       - rustore/app-icon
       - rustore/fix-launcher-icon
       - rustore/fix-round-launcher-icon
+      - rustore/rose-gold-icon-fix
 
 permissions:
   contents: read
@@ -34,7 +35,7 @@ jobs:
         run: npm run prepare:web
       - name: Add Android platform
         run: npx cap add android
-      - name: Install app launcher icon
+      - name: Install Rose Gold app launcher icons
         run: node scripts/install-android-icon.mjs
       - name: Sync Capacitor
         run: npx cap sync android
@@ -42,11 +43,18 @@ jobs:
         run: |
           test -s android/app/src/main/res/mipmap-mdpi/ic_launcher.png
           test -s android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          test -s android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
           test -s android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
           test -s android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
           test -s android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+          test ! -e android/app/src/main/res/drawable/ic_launcher_foreground.xml
           grep -q 'ic_launcher_foreground' android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
           grep -q 'ic_launcher_foreground' android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          grep -q 'android:icon="@mipmap/ic_launcher"' android/app/src/main/AndroidManifest.xml
+          grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' android/app/src/main/AndroidManifest.xml
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug
