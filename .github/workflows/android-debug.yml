@@ -10,6 +10,7 @@ on:
       - rustore/fix-launcher-icon
       - rustore/fix-round-launcher-icon
       - rustore/rose-gold-icon-fix
+      - rustore/selected-cinematic-music
 
 permissions:
   contents: read
