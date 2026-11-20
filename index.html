@@ -196,8 +196,10 @@ function musicError(a,stage,e){
   const code=a&&a.error?a.error.code:0;
   const detail=code===1?'загрузка отменена':code===2?'ошибка сети':code===3?'ошибка декодирования MP3':code===4?'WebView отклонил аудиопоток':(e&&e.message)||((e&&e.name)||'неизвестная ошибка');
   console.warn('[MP music]',stage,detail,a&&a.currentSrc,e||'');
-  if(AU.audio===a){AU.audio=null;AU.mode=null}
-  if(AU.objectUrl){URL.revokeObjectURL(AU.objectUrl);AU.objectUrl=null}
+  if(AU.audio===a){
+    AU.audio=null;AU.mode=null;
+    if(AU.objectUrl){URL.revokeObjectURL(AU.objectUrl);AU.objectUrl=null}
+  }
   toast('Музыка: '+detail+'. Подробности записаны для диагностики.');
 }
 function stopMusic(){
