@@ -30,4 +30,7 @@ for (const file of files) {
   await cp(resolve(root, file), resolve(webDir, file));
 }
 
-console.log(`Prepared ${files.length} web assets in www/ for Capacitor.`);
+// Include the bundled soundtrack in the Android WebView package.
+await cp(resolve(root, 'assets/audio'), resolve(webDir, 'assets/audio'), { recursive: true });
+
+console.log(`Prepared ${files.length} web assets plus soundtrack directory in www/ for Capacitor.`);
