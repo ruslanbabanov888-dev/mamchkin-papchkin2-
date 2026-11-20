@@ -617,7 +617,7 @@ function reloadSavedState(){
   TM=tmRead('team',tmDefaults);SC=tmRead('secret',scDefaults);
   try{Object.assign(AU,JSON.parse(localStorage.getItem('mp2snd')||'{}'))}catch(e){}
 }
-addEventListener('pagehide',()=>{mstop();if(AU.audio){AU.audio.pause();AU.audio=null}if(!window.__MP_RESETTING)save()});document.addEventListener('visibilitychange',()=>{if(document.hidden){mstop();if(AU.ctx){try{AU.ctx.suspend()}catch(e){}}return}if(AU.ctx){try{AU.ctx.resume()}catch(e){}}tick()});document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button'))sfx('click')});
+addEventListener('pagehide',()=>{mstop();if(AU.audio){AU.audio.pause();AU.audio=null}if(!window.__MP_RESETTING)save()});document.addEventListener('visibilitychange',()=>{if(document.hidden){mstop();if(AU.ctx){try{AU.ctx.suspend()}catch(e){}}return}if(AU.ctx){try{AU.ctx.resume()}catch(e){}}tick()});document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button')){sfx('click');if(!AU.go){AU.go=1;sync()}}});
 (()=>{
   reloadSavedState();
   go();
