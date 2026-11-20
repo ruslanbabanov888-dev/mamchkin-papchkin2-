@@ -185,13 +185,13 @@ vic:()=>[[392,0],[392,.18],[392,.36],[523,.54],[659,.9],[784,1.2],[1047,1.6]].fo
 const MUSIC_TRACKS={menu:'assets/audio/menu-cinematic-nastelbom.mp3',challenge:'assets/audio/challenge-epic-cinematic-journey-apex.mp3',victory:'assets/audio/victory-triumphant-main-good-b-music.mp3'};
 function mus(mode){
   if(AU.mute||!AU.mus)mode=null;
-  if(mode==='victory'){AU.mode='victory';if(AU.audio){AU.audio.pause();AU.audio.currentTime=0}const a=new Audio(MUSIC_TRACKS.victory);AU.audio=a;a.loop=false;a.volume=AU.mv;a.play().catch(()=>{});clearTimeout(AU.victoryTimer);AU.victoryTimer=setTimeout(()=>{if(AU.mode==='victory'){AU.mode=null;sync()}},121000);return}
+  if(mode==='victory'){AU.mode='victory';if(AU.audio){AU.audio.pause();AU.audio.currentTime=0}const a=new Audio(MUSIC_TRACKS.victory);AU.audio=a;a.loop=false;a.volume=AU.mv;a.addEventListener('error',()=>{if(AU.audio===a){AU.audio=null;AU.mode=null;sync()}},{once:true});a.play().catch(()=>{});clearTimeout(AU.victoryTimer);AU.victoryTimer=setTimeout(()=>{if(AU.mode==='victory'){AU.mode=null;sync()}},121000);return}
   if(AU.victoryTimer){clearTimeout(AU.victoryTimer);AU.victoryTimer=null}
   if(AU.mode===mode&&AU.audio&&!AU.audio.paused)return;
   AU.mode=mode||null;
   if(AU.audio){AU.audio.pause();AU.audio.currentTime=0;AU.audio=null}
   if(!mode)return;
-  const a=new Audio(MUSIC_TRACKS[mode]);AU.audio=a;a.loop=true;a.preload='auto';a.volume=Math.max(0,Math.min(1,AU.mv));a.play().catch(()=>{});
+  const a=new Audio(MUSIC_TRACKS[mode]);AU.audio=a;a.loop=true;a.preload='auto';a.volume=Math.max(0,Math.min(1,AU.mv));a.addEventListener('error',()=>{if(AU.audio===a){AU.audio=null;AU.mode=null}},{once:true});a.play().catch(()=>{});
 }
 function sync(){
   if(!AU.go||AU.mute||!AU.mus){mus(null);return}
