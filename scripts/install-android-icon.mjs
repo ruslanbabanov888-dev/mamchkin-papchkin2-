@@ -32,7 +32,10 @@ for (const entry of await readdir(source, { withFileTypes: true })) {
 
 // The foreground is a PNG resource. Remove the old XML wrapper with the
 // same resource name to avoid Android resource-name collisions.
+// Remove generated XML variants as well: drawable-v24 would otherwise
+// take precedence over the supplied PNG on newer Android versions.
 await rm(resolve(target, 'drawable/ic_launcher_foreground.xml'), { force: true });
+await rm(resolve(target, 'drawable-v24/ic_launcher_foreground.xml'), { force: true });
 await mkdir(resolve(target, 'drawable-nodpi'), { recursive: true });
 await copyFile(
   resolve(root, 'ic_launcher_foreground.png'),
