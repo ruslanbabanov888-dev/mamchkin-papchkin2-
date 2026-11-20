@@ -193,25 +193,39 @@ success:()=>[523,659,784,1047].forEach((f,i)=>T(f,i*.12,.5,'triangle',.18)),fail
 vic:()=>[[392,0],[392,.18],[392,.36],[523,.54],[659,.9],[784,1.2],[1047,1.6]].forEach(([f,o])=>{T(f,o,.7,'sawtooth',.06);T(f/2,o,.7,'triangle',.1)})}[n]||(()=>0))()}
 const MUSIC_TRACKS={menu:'assets/audio/nastelbom-cinematic-intro-485889.mp3',challenge:'assets/audio/artur_aravidi_music-epic-cinematic-journey-apex-308461.mp3',victory:'assets/audio/good_b_music-triumphant-main-348750.mp3'};
 function musicError(a,stage,e){
-  const name=e&&e.name?e.name:'MediaError';
   const code=a&&a.error?a.error.code:0;
-  const detail=code===1?'загрузка отменена':code===2?'ошибка сети':code===3?'файл не удалось декодировать':code===4?'формат или путь не поддерживается':name;
+  const detail=code===1?'загрузка отменена':code===2?'ошибка сети':code===3?'ошибка декодирования MP3':code===4?'WebView отклонил аудиопоток':(e&&e.message)||((e&&e.name)||'неизвестная ошибка');
   console.warn('[MP music]',stage,detail,a&&a.currentSrc,e||'');
   if(AU.audio===a){AU.audio=null;AU.mode=null}
-  toast('Музыка не запустилась: '+detail+'. Проверьте подключение/файл и нажмите ещё раз.');
+  if(AU.objectUrl){URL.revokeObjectURL(AU.objectUrl);AU.objectUrl=null}
+  toast('Музыка: '+detail+'. Подробности записаны для диагностики.');
 }
-function startMusic(mode,loop){
-  const url=new URL(MUSIC_TRACKS[mode],document.baseURI).href;
-  const a=new Audio();AU.audio=a;AU.mode=mode;a.src=url;a.preload='auto';a.loop=!!loop;
+function stopMusic(){
+  if(AU.audio){AU.audio.pause();AU.audio.removeAttribute('src');AU.audio.load();AU.audio=null}
+  if(AU.objectUrl){URL.revokeObjectURL(AU.objectUrl);AU.objectUrl=null}
+}
+async function startMusic(mode,loop){
+  const a=new Audio();AU.audio=a;AU.mode=mode;a.preload='auto';a.loop=!!loop;
   a.volume=Math.max(0,Math.min(1,AU.mute||!AU.mus?0:AU.mv));
-  a.addEventListener('error',()=>musicError(a,'error'),{once:true});
-  let p;try{p=a.play()}catch(e){musicError(a,'play',e);return}
-  if(p&&p.catch)p.catch(e=>musicError(a,'play',e));
+  try{
+    const url=new URL(MUSIC_TRACKS[mode],document.baseURI).href;
+    console.info('[MP music] fetch',mode,url,document.baseURI);
+    const response=await fetch(url,{cache:'force-cache'});
+    if(!response.ok)throw new Error('HTTP '+response.status+' при загрузке аудио');
+    const data=await response.arrayBuffer();
+    if(!data.byteLength)throw new Error('получен пустой аудиофайл');
+    if(AU.audio!==a)return;
+    const blob=new Blob([data],{type:'audio/mpeg'});
+    AU.objectUrl=URL.createObjectURL(blob);
+    a.src=AU.objectUrl;
+    await a.play();
+    console.info('[MP music] playing',mode,'bytes',data.byteLength);
+  }catch(e){musicError(a,'fetch/play',e)}
 }
 function mus(mode){
   if(AU.mute||!AU.mus)mode=null;
   if(mode==='victory'){
-    if(AU.audio){AU.audio.pause();AU.audio.currentTime=0;AU.audio=null}
+    stopMusic();
     startMusic('victory',false);
     clearTimeout(AU.victoryTimer);
     AU.victoryTimer=setTimeout(()=>{if(AU.mode==='victory'){AU.mode=null;sync()}},121000);
@@ -219,7 +233,7 @@ function mus(mode){
   }
   if(AU.victoryTimer){clearTimeout(AU.victoryTimer);AU.victoryTimer=null}
   if(AU.mode===mode&&AU.audio&&!AU.audio.paused)return;
-  if(AU.audio){AU.audio.pause();AU.audio.currentTime=0;AU.audio=null}
+  stopMusic();
   AU.mode=mode||null;
   if(!mode)return;
   startMusic(mode,true);
