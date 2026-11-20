@@ -183,15 +183,37 @@ function sfx(n){if(AU.mute||!AU.fx)return;if(FILES[n]){try{const a=new Audio(FIL
 success:()=>[523,659,784,1047].forEach((f,i)=>T(f,i*.12,.5,'triangle',.18)),fail:()=>T(420,0,.4,'sawtooth',.07,150),reward:()=>{T(1318,0,.1,'square',.06);T(1760,.09,.45,'square',.06)},care:()=>{nz(d,t,.06,.3,800);T(180,0,.15,'sine',.25)},points:()=>{T(1568,0,.3,'sine',.12);T(2093,.1,.4,'sine',.1)},
 vic:()=>[[392,0],[392,.18],[392,.36],[523,.54],[659,.9],[784,1.2],[1047,1.6]].forEach(([f,o])=>{T(f,o,.7,'sawtooth',.06);T(f/2,o,.7,'triangle',.1)})}[n]||(()=>0))()}
 const MUSIC_TRACKS={menu:'assets/audio/nastelbom-cinematic-intro-485889.mp3',challenge:'assets/audio/artur_aravidi_music-epic-cinematic-journey-apex-308461.mp3',victory:'assets/audio/good_b_music-triumphant-main-348750.mp3'};
+function musicError(a,stage,e){
+  const name=e&&e.name?e.name:'MediaError';
+  const code=a&&a.error?a.error.code:0;
+  const detail=code===1?'загрузка отменена':code===2?'ошибка сети':code===3?'файл не удалось декодировать':code===4?'формат или путь не поддерживается':name;
+  console.warn('[MP music]',stage,detail,a&&a.currentSrc,e||'');
+  if(AU.audio===a){AU.audio=null;AU.mode=null}
+  toast('Музыка не запустилась: '+detail+'. Проверьте подключение/файл и нажмите ещё раз.');
+}
+function startMusic(mode,loop){
+  const url=new URL(MUSIC_TRACKS[mode],document.baseURI).href;
+  const a=new Audio();AU.audio=a;AU.mode=mode;a.src=url;a.preload='auto';a.loop=!!loop;
+  a.volume=Math.max(0,Math.min(1,AU.mute||!AU.mus?0:AU.mv));
+  a.addEventListener('error',()=>musicError(a,'error'),{once:true});
+  let p;try{p=a.play()}catch(e){musicError(a,'play',e);return}
+  if(p&&p.catch)p.catch(e=>musicError(a,'play',e));
+}
 function mus(mode){
   if(AU.mute||!AU.mus)mode=null;
-  if(mode==='victory'){AU.mode='victory';if(AU.audio){AU.audio.pause();AU.audio.currentTime=0}const a=new Audio(MUSIC_TRACKS.victory);AU.audio=a;a.loop=false;a.volume=AU.mv;a.addEventListener('error',()=>{if(AU.audio===a){AU.audio=null;AU.mode=null;sync()}},{once:true});a.play().catch(()=>{});clearTimeout(AU.victoryTimer);AU.victoryTimer=setTimeout(()=>{if(AU.mode==='victory'){AU.mode=null;sync()}},121000);return}
+  if(mode==='victory'){
+    if(AU.audio){AU.audio.pause();AU.audio.currentTime=0;AU.audio=null}
+    startMusic('victory',false);
+    clearTimeout(AU.victoryTimer);
+    AU.victoryTimer=setTimeout(()=>{if(AU.mode==='victory'){AU.mode=null;sync()}},121000);
+    return;
+  }
   if(AU.victoryTimer){clearTimeout(AU.victoryTimer);AU.victoryTimer=null}
   if(AU.mode===mode&&AU.audio&&!AU.audio.paused)return;
-  AU.mode=mode||null;
   if(AU.audio){AU.audio.pause();AU.audio.currentTime=0;AU.audio=null}
+  AU.mode=mode||null;
   if(!mode)return;
-  const a=new Audio(MUSIC_TRACKS[mode]);AU.audio=a;a.loop=true;a.preload='auto';a.volume=Math.max(0,Math.min(1,AU.mv));a.addEventListener('error',()=>{if(AU.audio===a){AU.audio=null;AU.mode=null}},{once:true});a.play().catch(()=>{});
+  startMusic(mode,true);
 }
 function sync(){
   if(!AU.go||AU.mute||!AU.mus){mus(null);return}
@@ -617,7 +639,7 @@ function reloadSavedState(){
   TM=tmRead('team',tmDefaults);SC=tmRead('secret',scDefaults);
   try{Object.assign(AU,JSON.parse(localStorage.getItem('mp2snd')||'{}'))}catch(e){}
 }
-addEventListener('pagehide',()=>{mstop();if(AU.audio){AU.audio.pause();AU.audio=null}if(!window.__MP_RESETTING)save()});document.addEventListener('visibilitychange',()=>{if(document.hidden){mstop();if(AU.ctx){try{AU.ctx.suspend()}catch(e){}}return}if(AU.ctx){try{AU.ctx.resume()}catch(e){}}tick()});document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button')){sfx('click');if(!AU.go){AU.go=1;sync()}}});
+addEventListener('pagehide',()=>{mstop();if(AU.audio){AU.audio.pause();AU.audio=null}if(!window.__MP_RESETTING)save()});document.addEventListener('visibilitychange',()=>{if(document.hidden){mstop();if(AU.ctx){try{AU.ctx.suspend()}catch(e){}}return}if(AU.ctx){try{AU.ctx.resume()}catch(e){}}tick()});document.addEventListener('pointerdown',()=>{if(!AU.go){AU.go=1;sync()}},{capture:true,passive:true});document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button')){sfx('click');if(!AU.go){AU.go=1;sync()}}});
 (()=>{
   reloadSavedState();
   go();
