@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10182b">
+<title>Книга нашей истории — прототип</title>
+<style>
+:root{color-scheme:dark;--bg:#0d1424;--panel:#172238;--panel2:#1d2a43;--gold:#d6b16d;--gold2:#f0d9a6;--ink:#f4eddf;--muted:#a9b2c1;--line:#34435c;--danger:#c77b76}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2941 0,#0d1424 60%);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.wrap{max-width:960px;margin:auto;padding:22px 16px 48px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px}.brand{color:var(--gold);font-size:12px;letter-spacing:.18em;text-transform:uppercase}.top h1{font:500 clamp(27px,5vw,42px)/1.08 Georgia,serif;margin:5px 0}.sub{color:var(--muted);font-size:13px}.pill{border:1px solid var(--line);border-radius:99px;padding:7px 11px;color:var(--muted);font-size:12px;white-space:nowrap}
+.cover{border:1px solid #8d7045;border-radius:18px;padding:26px;background:linear-gradient(135deg,#17243b,#10192b 65%,#253047);position:relative;overflow:hidden;box-shadow:0 18px 50px #0005}.cover:before{content:"";position:absolute;inset:12px;border:1px solid #b9975a66;border-radius:11px;pointer-events:none}.cover-in{position:relative;text-align:center;padding:16px 10px}.cover-mark{font-size:34px;color:var(--gold)}.cover h2{font:500 clamp(28px,5vw,46px)/1.12 Georgia,serif;color:var(--gold2);margin:12px 0 8px}.cover p{color:#d5c6a8;margin:0}.cover .rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);max-width:240px;margin:18px auto}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}.btn{border:1px solid var(--line);background:#202e47;color:var(--ink);padding:11px 15px;border-radius:11px}.btn.primary{background:linear-gradient(135deg,#d7b875,#a77c3c);border-color:#e2c78f;color:#171b23;font-weight:700}.btn.ghost{background:transparent}.btn.danger{color:#f1b0a9;border-color:#754b4a}.btn:disabled{opacity:.45;cursor:not-allowed}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 20px}.stat{background:#ffffff08;border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--muted);font-size:12px}.stat b{color:var(--gold2);font-size:15px;margin-right:5px}
+.section-title{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:26px 0 12px}.section-title h3{font:500 23px Georgia,serif;margin:0;color:var(--gold2)}.section-title small{color:var(--muted)}
+.chapters{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px}.chapter{background:#172238;border:1px solid var(--line);border-radius:12px;padding:13px;text-align:left;color:var(--ink);min-height:88px}.chapter.active{border-color:var(--gold);background:#28334a}.chapter strong{display:block;color:var(--gold2);font:17px Georgia,serif}.chapter span{color:var(--muted);font-size:12px}
+.pages{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.page-card{border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#f1e9d8,#d9cfbb);color:#272b31;padding:12px;min-height:190px;display:flex;flex-direction:column;gap:8px;cursor:pointer;text-align:left}.page-card .page-kind{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#80663d}.page-card h4{font:500 21px Georgia,serif;margin:0;color:#273044}.page-card p{margin:0;color:#50535a;font-size:13px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.page-card .thumbs{display:flex;gap:5px;overflow:hidden}.page-card img,.page-card video{width:55px;height:55px;object-fit:cover;border-radius:5px}.page-card .date{margin-top:auto;color:#6c675e;font-size:11px}
+.empty{border:1px dashed #506078;border-radius:14px;padding:25px;text-align:center;color:var(--muted)}
+.modal{position:fixed;inset:0;background:#050912d9;display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:10}.modal.open{display:flex}.sheet{background:#172238;border:1px solid var(--line);border-radius:18px 18px 12px 12px;width:min(720px,100%);max-height:92vh;overflow:auto;padding:18px}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.sheet h2{font:500 26px Georgia,serif;color:var(--gold2);margin:0 0 12px}.x{background:transparent;border:0;color:var(--muted);font-size:26px}
+label{display:block;color:var(--muted);font-size:12px;margin:12px 0 5px}input,textarea,select{width:100%;background:#0e1728;border:1px solid var(--line);border-radius:9px;padding:11px;color:var(--ink)}textarea{min-height:105px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.drop{border:1px dashed #65758c;border-radius:12px;padding:14px;text-align:center;color:var(--muted);margin-top:12px}.media-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-top:10px}.media-item{background:#0e1728;border:1px solid var(--line);border-radius:10px;padding:8px;min-width:0}.media-item img,.media-item video{width:100%;height:105px;object-fit:cover;border-radius:6px;background:#070b12}.media-item audio{width:100%}.media-item small{display:block;color:var(--muted);overflow-wrap:anywhere;margin-top:5px}.media-item button{margin-top:6px;font-size:11px;padding:5px 8px}.note-preview{white-space:pre-wrap;color:#35383e;font:15px/1.6 Georgia,serif}.viewer{background:#eee6d7;color:#30343c;border-radius:12px;padding:18px;margin-top:12px}.viewer h2{color:#283247}.viewer .meta{color:#766b5c;font-size:12px}.viewer .story{white-space:pre-wrap;font:16px/1.65 Georgia,serif;color:#3c4149}.viewer-media{display:grid;gap:10px;margin:14px 0}.viewer-media img,.viewer-media video{max-width:100%;max-height:420px;object-fit:contain;border-radius:7px;background:#121212}.viewer-media audio{width:100%}.viewer-media figure{margin:0}.viewer-media figcaption{font-size:12px;color:#68645c;margin-top:4px}.foot{color:#778398;font-size:11px;text-align:center;margin-top:28px}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:18px}.cover{padding:40px}.wrap{padding-top:30px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div><div class="brand">Мамчкин & Папчкин</div><h1>Книга нашей истории</h1><div class="sub">Семейные воспоминания, которые остаются рядом</div></div><div class="pill" id="storageBadge">Локальный прототип</div></header>
+<section class="cover"><div class="cover-in"><div class="cover-mark">✦</div><h2 id="bookTitle">История нашего Босса</h2><div class="rule"></div><p>Фотографии · видео · голос · наши истории</p><p style="font-size:12px;margin-top:8px">Эта книга хранится на этом устройстве</p></div></section>
+<div class="stats"><div class="stat"><b id="pageCount">0</b> страниц</div><div class="stat"><b id="photoCount">0</b> фото</div><div class="stat"><b id="videoCount">0</b> видео</div><div class="stat"><b id="audioCount">0</b> аудио</div></div>
+<div class="toolbar"><button class="btn primary" id="addPage">＋ Добавить страницу</button><button class="btn" id="recordAudio">● Записать голос</button><button class="btn ghost" id="editBook">Настроить обложку</button></div>
+<div class="section-title"><h3>Главы нашей истории</h3><small>Выбирай любую — порядок свободный</small></div>
+<div class="chapters" id="chapters"></div>
+<div class="section-title"><h3 id="pagesHeading">Все страницы</h3><small id="pageHint">Нажми на страницу, чтобы открыть</small></div>
+<div class="pages" id="pages"></div>
+<div class="foot">Прототип для проверки интерфейса. Файлы сохраняются локально в хранилище браузера этого устройства. Не очищай данные браузера, пока не сделана резервная копия.</div>
+</div>
+<div class="modal" id="editor"><div class="sheet"><div class="sheet-head"><h2 id="editorTitle">Новая страница</h2><button class="x" data-close="editor">×</button></div>
+<form id="pageForm"><input type="hidden" id="pageId">
+<div class="row"><div><label for="chapter">Глава</label><select id="chapter"></select></div><div><label for="kind">Тип страницы</label><select id="kind"><option value="memory">Воспоминание</option><option value="note">Свободная заметка</option><option value="milestone">Важное событие</option><option value="voice">Голос и звуки</option></select></div></div>
+<label for="title">Заголовок</label><input id="title" maxlength="90" placeholder="Например, Моя первая улыбка" required>
+<div class="row"><div><label for="date">Дата события</label><input id="date" type="date"></div><div><label for="caption">Короткая подпись</label><input id="caption" maxlength="120" placeholder="Что хочется запомнить"></div></div>
+<label for="story">Наша история / заметка</label><textarea id="story" placeholder="Запишите этот момент своими словами..."></textarea>
+<div class="drop"><label for="files" style="margin:0 0 8px;color:var(--gold2)">Добавить фото, видео или аудио</label><input id="files" type="file" accept="image/*,video/*,audio/*" multiple><small>Файлы копируются в локальное хранилище браузера. Оригиналы на телефоне не изменяются.</small></div>
+<div class="media-list" id="pendingMedia"></div>
+<div class="toolbar"><button class="btn primary" type="submit">Сохранить страницу</button><button class="btn ghost" type="button" data-close="editor">Отмена</button></div>
+</form></div></div>
+<div class="modal" id="viewer"><div class="sheet"><div class="sheet-head"><h2>Страница книги</h2><button class="x" data-close="viewer">×</button></div><div class="viewer" id="viewerContent"></div><div class="toolbar"><button class="btn" id="editPage">Редактировать</button><button class="btn danger" id="deletePage">Удалить страницу</button></div></div></div>
+<div class="modal" id="bookModal"><div class="sheet"><div class="sheet-head"><h2>Обложка книги</h2><button class="x" data-close="bookModal">×</button></div><label for="bookName">Название книги</label><input id="bookName" maxlength="70"><button class="btn primary" id="saveBook" style="margin-top:14px">Сохранить</button></div></div>
+<script>
+(function(){
+'use strict';
+const DB='mp_family_book_demo_v1', STORE='pages', META='meta';
+const chapters=[
+ ['before','До встречи','Ожидание и подготовка'],
+ ['meeting','Наша первая встреча','Рождение и первые дни'],
+ ['growing','Как ты растёшь','Месяцы и первые достижения'],
+ ['world','Твой мир','Голос, характер и любимые вещи'],
+ ['future','Послания в будущее','Письма и семейные истории']
+];
+let db,activeChapter='all',currentId=null,pending=[],recorder=null,recordChunks=[];
+const $=id=>document.getElementById(id);
+function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'});if(!d.objectStoreNames.contains(META))d.createObjectStore(META,{keyPath:'key'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+function tx(store,mode='readonly'){return db.transaction(store,mode).objectStore(store);}
+function request(req){return new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);});}
+async function allPages(){return request(tx(STORE).getAll());}
+async function savePage(p){return request(tx(STORE,'readwrite').put(p));}
+async function getMeta(key){return request(tx(META).get(key));}
+async function setMeta(key,value){return request(tx(META,'readwrite').put({key,value}));}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmt(d){if(!d)return 'Дата не указана';const a=d.split('-');return a.length===3?a.reverse().join('.'):d;}
+function human(n){return n<1024*1024?(n/1024).toFixed(0)+' КБ':(n/1024/1024).toFixed(1)+' МБ';}
+function chapterName(id){return (chapters.find(c=>c[0]===id)||[])[1]||'Без главы';}
+function modal(id,open){$(id).classList.toggle('open',open);}
+async function render(){
+ const list=(await allPages()).sort((a,b)=>(b.date||b.updated).localeCompare(a.date||a.updated));
+ const shown=activeChapter==='all'?list:list.filter(p=>p.chapter===activeChapter);
+ $('pageCount').textContent=list.length;
+ $('photoCount').textContent=list.reduce((n,p)=>n+p.media.filter(m=>m.type.startsWith('image/')).length,0);
+ $('videoCount').textContent=list.reduce((n,p)=>n+p.media.filter(m=>m.type.startsWith('video/')).length,0);
+ $('audioCount').textContent=list.reduce((n,p)=>n+p.media.filter(m=>m.type.startsWith('audio/')).length,0);
+ $('chapters').innerHTML='<button class="chapter '+(activeChapter==='all'?'active':'')+'" data-chapter="all"><strong>Вся книга</strong><span>'+list.length+' страниц</span></button>'+chapters.map(c=>'<button class="chapter '+(activeChapter===c[0]?'active':'')+'" data-chapter="'+c[0]+'"><strong>'+esc(c[1])+'</strong><span>'+esc(c[2])+' · '+list.filter(p=>p.chapter===c[0]).length+'</span></button>').join('');
+ $('pagesHeading').textContent=activeChapter==='all'?'Все страницы':chapterName(activeChapter);
+ $('pages').innerHTML=shown.length?shown.map(p=>'<button class="page-card" data-page="'+p.id+'"><span class="page-kind">'+esc(p.kindLabel)+' · '+esc(chapterName(p.chapter))+'</span><h4>'+esc(p.title)+'</h4><div class="thumbs">'+p.media.slice(0,4).map(m=>m.type.startsWith('image/')?'<img src="'+URL.createObjectURL(m.blob)+'" alt="">':m.type.startsWith('video/')?'<span>🎬</span>':'<span>🎙️</span>').join('')+'</div><p>'+esc(p.caption||p.story||'Страница без подписи')+'</p><span class="date">'+fmt(p.date)+' · '+p.media.length+' влож.</span></button>').join(''):'<div class="empty" style="grid-column:1/-1">В этой главе пока нет страниц.<br>Добавь первое воспоминание — оно останется здесь.</div>';
+ document.querySelectorAll('[data-chapter]').forEach(b=>b.onclick=()=>{activeChapter=b.dataset.chapter;render();});
+ document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>openViewer(b.dataset.page));
+}
+function fillChapters(){ $('chapter').innerHTML=chapters.map(c=>'<option value="'+c[0]+'">'+esc(c[1])+'</option>').join('');}
+function clearPending(){pending=[];$('pendingMedia').innerHTML='';$('files').value='';}
+function renderPending(){ $('pendingMedia').innerHTML=pending.map((m,i)=>'<div class="media-item"><div>'+ (m.type.startsWith('image/')?'🖼️':m.type.startsWith('video/')?'🎬':'🎙️')+' '+esc(m.name)+'</div><small>'+human(m.blob.size)+'</small><button class="btn danger" type="button" data-remove="'+i+'">Убрать</button></div>').join('');document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{pending.splice(+b.dataset.remove,1);renderPending();});}
+function openEditor(p){
+ currentId=p?p.id:null;pending=p?p.media.slice():[]; $('pageId').value=p?p.id:'';
+ $('editorTitle').textContent=p?'Редактировать страницу':'Новая страница';
+ $('chapter').value=p?p.chapter:(activeChapter==='all'?'growing':activeChapter);
+ $('kind').value=p?p.kind:'memory';$('title').value=p?p.title:'';
+ $('date').value=p?p.date:new Date().toISOString().slice(0,10);
+ $('caption').value=p?p.caption||'':'';$('story').value=p?p.story||'':'';
+ renderPending();modal('viewer',false);modal('editor',true);
+}
+function kindLabel(k){return ({memory:'Воспоминание',note:'Заметка',milestone:'Событие',voice:'Голос и звуки'})[k]||'Воспоминание';}
+$('files').addEventListener('change',e=>{for(const f of e.target.files){if(!/^(image|video|audio)\//.test(f.type))continue;pending.push({id:crypto.randomUUID(),name:f.name,type:f.type,blob:f,added:new Date().toISOString()});}renderPending();});
+$('pageForm').addEventListener('submit',async e=>{
+ e.preventDefault();const now=new Date().toISOString();let old=currentId?await request(tx(STORE).get(currentId)):null;
+ const p={id:currentId||crypto.randomUUID(),chapter:$('chapter').value,kind:$('kind').value,kindLabel:kindLabel($('kind').value),title:$('title').value.trim(),date:$('date').value,caption:$('caption').value.trim(),story:$('story').value.trim(),media:pending,created:old?old.created:now,updated:now};
+ if(!p.title){alert('Добавь название страницы.');return;}await savePage(p);modal('editor',false);clearPending();activeChapter=p.chapter;await render();
+});
+async function openViewer(id){
+ const p=await request(tx(STORE).get(id));if(!p)return;currentId=id;
+ $('viewerContent').innerHTML='<div class="meta">'+esc(chapterName(p.chapter))+' · '+esc(kindLabel(p.kind))+' · '+fmt(p.date)+'</div><h2>'+esc(p.title)+'</h2>'+(p.caption?'<p><b>'+esc(p.caption)+'</b></p>':'')+'<div class="viewer-media">'+p.media.map(m=>{const u=URL.createObjectURL(m.blob);return m.type.startsWith('image/')?'<figure><img src="'+u+'" alt="'+esc(m.name)+'"><figcaption>'+esc(m.name)+'</figcaption></figure>':m.type.startsWith('video/')?'<figure><video controls playsinline preload="metadata" src="'+u+'"></video><figcaption>'+esc(m.name)+'</figcaption></figure>':'<figure><audio controls preload="metadata" src="'+u+'"></audio><figcaption>'+esc(m.name)+'</figcaption></figure>';}).join('')+'</div><div class="story">'+esc(p.story||'')+'</div>';
+ modal('viewer',true);
+}
+$('editPage').onclick=async()=>{const p=await request(tx(STORE).get(currentId));if(p)openEditor(p);};
+$('deletePage').onclick=async()=>{if(!confirm('Удалить эту страницу и её локальные вложения?'))return;await request(tx(STORE,'readwrite').delete(currentId));modal('viewer',false);render();};
+$('addPage').onclick=()=>openEditor(null);
+$('editBook').onclick=async()=>{$('bookName').value=(await getMeta('title'))?.value||'История нашего Босса';modal('bookModal',true);};
+$('saveBook').onclick=async()=>{const v=$('bookName').value.trim()||'История нашего Босса';await setMeta('title',v);$('bookTitle').textContent=v;modal('bookModal',false);};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>modal(b.dataset.close,false));
+$('recordAudio').onclick=async()=>{
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){alert('Запись аудио недоступна в этом браузере. Можно добавить готовую аудиозапись через «Добавить страницу».');return;}
+ try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});recordChunks=[];recorder=new MediaRecorder(stream);recorder.ondataavailable=e=>{if(e.data.size)recordChunks.push(e.data);};recorder.onstop=()=>{stream.getTracks().forEach(t=>t.stop());const blob=new Blob(recordChunks,{type:recorder.mimeType||'audio/webm'});pending=[{id:crypto.randomUUID(),name:'Голосовая запись',type:blob.type,blob,added:new Date().toISOString()}];$('chapter').value='world';$('kind').value='voice';$('title').value='Твой голос';$('date').value=new Date().toISOString().slice(0,10);$('caption').value='Голосовое воспоминание';$('story').value='';renderPending();modal('editor',true);};recorder.start();$('recordAudio').textContent='■ Остановить запись';$('recordAudio').onclick=()=>{if(recorder&&recorder.state!=='inactive')recorder.stop();$('recordAudio').textContent='● Записать голос';};}catch(err){alert('Не удалось получить доступ к микрофону: '+err.message);}
+};
+(async()=>{
+ try{db=await openDB();$('storageBadge').textContent='Локально · IndexedDB';const title=await getMeta('title');if(title?.value)$('bookTitle').textContent=title.value;fillChapters();await render();}
+ catch(err){$('storageBadge').textContent='Хранилище недоступно';$('pages').innerHTML='<div class="empty">Браузер не открыл локальное хранилище. Попробуй открыть страницу в актуальном Chrome.</div>';console.error(err);}
+})();
+})();
+</script>
+</body>
+</html>
