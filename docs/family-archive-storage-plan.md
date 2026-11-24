@@ -59,3 +59,6 @@ The currently investigated `@capacitor-community/sqlite@8.1.1` declares a Capaci
 - Native writes are verified by reading the exact serialized envelope back. On native failure, the app falls back to localStorage and displays a warning instead of silently claiming native persistence.
 - The localStorage v2 and legacy keys remain as recovery copies. No user note is sent to Supabase.
 - CI tests simulate native Preferences, migration, relaunch, precedence, invalid dates, and native failure fallback. They do not replace a physical Android force-stop/relaunch test.
+
+
+CI note (2026-11-24): the first verification run correctly caught that the legacy-recovery comment and async-persistence assertion had not yet been updated alongside the implementation. Both checks were corrected on this branch; rerun the full workflow against the branch head before treating the adapter as build-verified.
