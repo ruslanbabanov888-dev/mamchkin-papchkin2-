@@ -22,6 +22,8 @@ for (const name of ['notesView', 'notesSave', 'notesEdit', 'notesDelete', 'notes
   assert.ok(html.includes('function ' + name + '('), 'Missing notes function: ' + name);
 }
 assert.ok(html.includes("'mp2_family_notes'"), 'Notes storage key is missing');
+assert.ok(html.includes('function notesValidDate(v)'), 'Strict calendar date validation is missing');
+assert.ok(html.includes('if(!notesPersist()){familyNotes=previous;return}'), 'Notes must not report success when local persistence fails');
 assert.ok(html.includes("if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v))"), 'Notes date validator is incorrect');
 assert.ok(html.includes('src="notes-calm.webp"'), 'Home lion image is not referenced');
 assert.ok(html.includes('src="notes-dreamer.webp"'), 'Notes lion image is not referenced');
