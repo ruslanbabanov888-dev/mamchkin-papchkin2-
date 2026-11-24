@@ -47,7 +47,7 @@ assert.ok(html.includes('src="notes-calm.webp"'), 'Home lion image is not refere
 assert.ok(html.includes('src="notes-dreamer.webp"'), 'Notes lion image is not referenced');
 assert.ok(html.includes('class="mem-big-back"') && html.includes('НАЖМИ, ЧТОБЫ ОТКРЫТЬ'), 'Memory archive must use one large deck back as the main action');
 assert.ok(html.includes("find(i=>!(MM.st[i]|0))"), 'Memory archive must open the next untouched card in order');
-assert.ok(html.includes('A.memList(\\'progress\\')') && html.includes('A.memList(\\'done\\')'), 'Memory archive must expose only the unfinished and completed piles');
+assert.ok(html.includes("A.memList(\\'progress\\')") && html.includes("A.memList(\\'done\\')"), 'Memory archive must expose only the unfinished and completed piles');
 assert.ok(html.includes("A.memStatus('+i+',2)") && html.includes('Отложить'), 'Memory archive must offer one-tap completion and deferral');
 assert.ok(html.includes("MM.st[i]=k===2?2:1"), 'Memory archive must preserve deferred cards in the unfinished pile');
 assert.ok(html.includes('mem-note-details') && html.includes('Добавить заметку к истории'), 'Optional memory notes must remain available without blocking the task flow');
