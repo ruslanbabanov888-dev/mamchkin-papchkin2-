@@ -41,7 +41,7 @@ assert.ok(buildAdapter.includes("outfile: 'www/notes-storage.js'"), 'Android ada
 assert.ok(prepare.includes("'notes-storage.js'"), 'Web preparation must copy the browser bridge');
 assert.ok(html.includes('NOTES_LEGACY_KEY') && html.includes('recovery copy'), 'Legacy notes must remain available as a recovery copy');
 assert.ok(html.includes('function notesValidDate(v)'), 'Strict calendar date validation is missing');
-assert.ok(html.includes('if(!notesPersist()){familyNotes=previous;return}'), 'Notes must not report success when local persistence fails');
+assert.ok(html.includes('if(!await notesPersist()){familyNotes=previous;return}'), 'Notes must not report success when local persistence fails');
 assert.ok(html.includes("if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v))"), 'Notes date validator is incorrect');
 assert.ok(html.includes('src="notes-calm.webp"'), 'Home lion image is not referenced');
 assert.ok(html.includes('src="notes-dreamer.webp"'), 'Notes lion image is not referenced');
