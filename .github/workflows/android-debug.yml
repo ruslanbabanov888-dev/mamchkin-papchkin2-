@@ -32,6 +32,8 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: npm install
+      - name: Verify app source and local assets
+        run: npm run verify
       - name: Prepare web assets
         run: npm run prepare:web
       - name: Add Android platform
