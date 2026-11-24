@@ -8,6 +8,7 @@ const webDir = resolve(root, 'www');
 // Android build output, or other development files into the WebView bundle.
 const files = [
   'index.html',
+  'notes-storage.js',
   'emblem.png',
   'h-waiting.jpg',
   'h-team.jpg',
