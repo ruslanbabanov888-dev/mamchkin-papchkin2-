@@ -13,6 +13,8 @@ const files = [
   'h-team.jpg',
   'h-secret.jpg',
   'h-memories.jpg',
+  'notes-calm.webp',
+  'notes-dreamer.webp',
   'manifest.json',
   'icon-192.png',
   'icon-512.png',
