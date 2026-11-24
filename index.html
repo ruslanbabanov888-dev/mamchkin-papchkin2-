@@ -932,7 +932,7 @@ async function memBookOpen(){
   for(const row of rows){const k=mpOwnerKey(row.ownerType,row.ownerId);(byOwner[k]||(byOwner[k]=[])).push(row)}
   const completed=[];
   for(let i=1;i<=40;i++)if((MM.st[i]|0)===2)completed.push({i,title:MC[i-1][0],desc:MC[i-1][1],note:MM.nt[i]||'',media:byOwner[mpOwnerKey('memory',i)]||[]});
-  const notes=[...familyNotes].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(n=>({...n,media:byOwner[mpOwnerKey('note',n.id)]||[]}));
+  const notes=[...familyNotes].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(n=>({...n,media:(byOwner[mpOwnerKey('note',n.id)]||[]).filter(m=>m.type==='image')}));
   const mediaMarkup=async list=>{let out='';for(const m of list){const src=await mpDataUrl(m.blob),alt=mpBookEscape(m.name);if(m.type==='image')out+='<figure><img src="'+src+'" alt="'+alt+'"><figcaption>'+alt+'</figcaption></figure>';else if(m.type==='video')out+='<figure><video controls playsinline src="'+src+'"></video><figcaption>'+alt+'</figcaption></figure>';else out+='<figure class="audio"><div>Голосовая запись</div><audio controls src="'+src+'"></audio><figcaption>'+alt+'</figcaption></figure>'}return out};
   let chapters='';
   for(let n=0;n<10;n++){const group=completed.filter(c=>Math.floor((c.i-1)/4)===n);if(!group.length)continue;chapters+='<section class="chapter"><div class="chapter-kicker">ГЛАВА '+String(n+1).padStart(2,'0')+'</div><h2>'+mpBookEscape(MT[n])+'</h2>';for(const c of group){chapters+='<article class="story"><div class="story-number">ИСТОРИЯ '+String(c.i).padStart(2,'0')+'</div><h3>'+mpBookEscape(c.title)+'</h3><p>'+mpBookEscape(c.desc.replace(/~/g,' '))+'</p>'+(c.note?'<blockquote>'+mpBookEscape(c.note)+'</blockquote>':'')+await mediaMarkup(c.media)+'</article>'}chapters+='</section>'}
