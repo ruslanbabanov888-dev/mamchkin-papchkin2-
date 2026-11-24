@@ -38,6 +38,7 @@ assert.ok(contentMigration.includes('enable row level security'), 'Shared conten
 assert.ok(contentMigration.includes('grant select on table public.app_content to anon, authenticated'), 'Shared content must grant read-only access');
 assert.ok(contentMigration.includes('revoke all on table public.app_content'), 'Shared content must revoke client writes');
 assert.ok(seedMigration.includes("'game.base', 1"), 'Base content seed migration is missing');
+assert.ok(seedMigration.includes('$content$, true, now())'), 'Base content should be published in a fresh project');
 
 
 for (const asset of ['notes-calm.webp', 'notes-dreamer.webp']) {
