@@ -687,7 +687,7 @@ let notesDate=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 let familyNotes=(()=>{try{const x=JSON.parse(localStorage.getItem('mp2_family_notes')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}})();
 let notesEditing=null;
 function notesPersist(){try{localStorage.setItem('mp2_family_notes',JSON.stringify(familyNotes))}catch(e){toast('Не удалось сохранить заметку. Возможно, закончилось место на устройстве.');}}
-function notesDateChange(v){if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v))return;notesDate=v;notesEditing=null;go()}
+function notesDateChange(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return;notesDate=v;notesEditing=null;go()}
 function notesSave(){
  const title=$('#note-title')?.value.trim()||'';
  const body=$('#note-body')?.value.trim()||'';
