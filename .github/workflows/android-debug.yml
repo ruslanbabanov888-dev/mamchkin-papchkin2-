@@ -38,6 +38,8 @@ jobs:
         run: npm run verify:supabase
       - name: Prepare web assets
         run: npm run prepare:web
+      - name: Build native notes storage adapter
+        run: npm run build:notes-storage
       - name: Add Android platform
         run: npx cap add android
       - name: Install Rose Gold app launcher icons
