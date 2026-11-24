@@ -849,7 +849,7 @@ async function mpMediaRefresh(){
   const rows=await mpMediaAll();
   Object.values(mpMediaUrls).forEach(URL.revokeObjectURL);mpMediaUrls={};mpMediaIndex={};
   rows.sort((a,b)=>(a.created||0)-(b.created||0)).forEach(row=>{const key=mpOwnerKey(row.ownerType,row.ownerId);(mpMediaIndex[key]||(mpMediaIndex[key]=[])).push({id:row.id,type:row.type,name:row.name,mime:row.mime,created:row.created});mpMediaUrls[row.id]=URL.createObjectURL(row.blob)});
-  if(tab==='decks'&&dm==='mem')go();
+  if((tab==='decks'&&dm==='mem')||tab==='notes')go();
   return rows.length;
  }catch(e){console.warn('Family archive media index unavailable',e);return 0}
 }
