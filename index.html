@@ -708,18 +708,22 @@ loadSharedBaseContent();
 let notesDate=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
 let familyNotes=(()=>{try{const x=JSON.parse(localStorage.getItem('mp2_family_notes')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}})();
 let notesEditing=null;
-function notesPersist(){try{localStorage.setItem('mp2_family_notes',JSON.stringify(familyNotes))}catch(e){toast('Не удалось сохранить заметку. Возможно, закончилось место на устройстве.');}}
-function notesDateChange(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return;notesDate=v;notesEditing=null;go()}
+function notesPersist(){try{localStorage.setItem('mp2_family_notes',JSON.stringify(familyNotes));return true}catch(e){toast('Не удалось сохранить заметку. Возможно, закончилось место на устройстве.');return false}}
+function notesValidDate(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const [y,m,d]=v.split('-').map(Number);const date=new Date(y,m-1,d);return date.getFullYear()===y&&date.getMonth()===m-1&&date.getDate()===d}
+function notesDateChange(v){if(!notesValidDate(v))return;notesDate=v;notesEditing=null;go()}
 function notesSave(){
  const title=$('#note-title')?.value.trim()||'';
  const body=$('#note-body')?.value.trim()||'';
  if(!title&&!body)return toast('Добавьте текст события');
+ if(!notesValidDate(notesDate))return toast('Выберите корректную дату');
+ const previous=familyNotes.map(n=>({...n}));
  if(notesEditing){const n=familyNotes.find(x=>x.id===notesEditing);if(n){n.title=title||'Без названия';n.body=body;n.date=notesDate;n.updated=Date.now()}}
  else familyNotes.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),date:notesDate,title:title||'Без названия',body,created:Date.now()});
- notesPersist();notesEditing=null;toast('Событие сохранено');go();
+ if(!notesPersist()){familyNotes=previous;return}
+ notesEditing=null;toast('Событие сохранено');go();
 }
 function notesEdit(id){const n=familyNotes.find(x=>x.id===id);if(!n)return;notesDate=n.date;notesEditing=id;go();setTimeout(()=>{const a=$('#note-title'),b=$('#note-body');if(a)a.value=n.title;if(b)b.value=n.body},0)}
-function notesDelete(id){if(!confirm('Удалить эту заметку?'))return;familyNotes=familyNotes.filter(x=>x.id!==id);notesPersist();go()}
+function notesDelete(id){if(!confirm('Удалить эту заметку?'))return;const previous=familyNotes;familyNotes=familyNotes.filter(x=>x.id!==id);if(!notesPersist()){familyNotes=previous;return}go()}
 function notesCancelEdit(){notesEditing=null;go()}
 function notesView(){
  const entries=familyNotes.filter(n=>n.date===notesDate).sort((a,b)=>(a.created||0)-(b.created||0));
