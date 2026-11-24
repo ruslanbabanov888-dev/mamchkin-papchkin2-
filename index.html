@@ -831,4 +831,102 @@ function notesView(){
  ${entries.map(n=>`<article class="notes-entry"><h3>${E(n.title)}</h3><p>${E(n.body)}</p><div class="notes-entry-actions"><button class="b s sm" onclick="notesEdit('${n.id}')">Изменить</button><button class="b s sm" onclick="notesDelete('${n.id}')">Удалить</button></div></article>`).join('')||'<p class="mu">Пока нет записей за этот день. Сохраните первое событие.</p>'}
  `;
 }
+
+/* MP_FAMILY_BOOK_V1 — local-first media archive and family book */
+const MP_MEDIA_DB='mp2-family-media-v1';
+let mpMediaDbPromise=null,mpMediaIndex={},mpMediaUrls={},mpRecorder=null,mpRecorderStream=null,mpRecorderOwner=null,mpRecorderChunks=[];
+function mpMediaOpen(){
+ if(!('indexedDB'in window))return Promise.reject(new Error('IndexedDB недоступен'));
+ if(!mpMediaDbPromise)mpMediaDbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open(MP_MEDIA_DB,1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('assets')){const st=db.createObjectStore('assets',{keyPath:'id'});st.createIndex('owner',['ownerType','ownerId'],{unique:false})}};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Не удалось открыть архив'))});
+ return mpMediaDbPromise;
+}
+async function mpMediaAll(){const db=await mpMediaOpen();return new Promise((resolve,reject)=>{const tx=db.transaction('assets','readonly'),req=tx.objectStore('assets').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)})}
+async function mpMediaPut(record){const db=await mpMediaOpen();return new Promise((resolve,reject)=>{const tx=db.transaction('assets','readwrite');tx.objectStore('assets').put(record);tx.oncomplete=()=>resolve(record);tx.onerror=()=>reject(tx.error||new Error('Не удалось сохранить файл'));tx.onabort=()=>reject(tx.error||new Error('Сохранение отменено'))})}
+async function mpMediaDelete(id){const db=await mpMediaOpen();return new Promise((resolve,reject)=>{const tx=db.transaction('assets','readwrite');tx.objectStore('assets').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
+function mpOwnerKey(type,id){return type+':'+String(id)}
+async function mpMediaRefresh(){
+ try{
+  const rows=await mpMediaAll();
+  Object.values(mpMediaUrls).forEach(URL.revokeObjectURL);mpMediaUrls={};mpMediaIndex={};
+  rows.sort((a,b)=>(a.created||0)-(b.created||0)).forEach(row=>{const key=mpOwnerKey(row.ownerType,row.ownerId);(mpMediaIndex[key]||(mpMediaIndex[key]=[])).push({id:row.id,type:row.type,name:row.name,mime:row.mime,created:row.created});mpMediaUrls[row.id]=URL.createObjectURL(row.blob)});
+  if(tab==='decks'&&dm==='mem')go();
+  return rows.length;
+ }catch(e){console.warn('Family archive media index unavailable',e);return 0}
+}
+function mpMediaEsc(v){return E(String(v||''))}
+function mpMediaHtml(type,id){
+ const key=mpOwnerKey(type,id),items=mpMediaIndex[key]||[];
+ const cards=items.map(m=>{const url=mpMediaUrls[m.id]||'';const name=mpMediaEsc(m.name);let player='';
+  if(m.type==='image')player='<img class="mp-media-preview" src="'+url+'" alt="'+name+'">';
+  else if(m.type==='video')player='<video class="mp-media-preview" controls playsinline preload="metadata" src="'+url+'"></video>';
+  else player='<audio controls preload="metadata" src="'+url+'"></audio>';
+  return '<div class="mp-media-item">'+player+'<div class="mp-media-caption">'+name+' <button class="b s sm" onclick="mpMediaRemove(\''+m.id+'\')">Удалить</button></div></div>';
+ }).join('');
+ return '<div class="mp-media-box"><div class="mp-media-items">'+cards+'</div><label class="b s sm mp-upload-label">＋ Добавить фото, видео или аудио<input type="file" accept="image/*,video/*,audio/*" multiple onchange="mpMediaFiles(\''+type+'\',\''+String(id).replace(/'/g,'')+'\',this.files);this.value=\'\'"></label><button class="b s sm" onclick="mpRecordToggle(\''+type+'\',\''+String(id).replace(/'/g,'')+'\')">'+(mpRecorder&&mpRecorderOwner===key?'■ Завершить голосовую запись':'🎙 Записать голосовое')+'</button>'+(mpRecorder&&mpRecorderOwner===key?'<small class="mu">Идёт запись… Нажми «Завершить голосовую запись».</small>':'')+'</div>';
+}
+async function mpMediaSaveBlob(type,id,blob,name){
+ if(!blob||!blob.size)return;
+ const max=blob.type.startsWith('video/')?100*1024*1024:blob.type.startsWith('image/')?25*1024*1024:40*1024*1024;
+ if(blob.size>max){toast('Файл слишком большой. Максимум: '+(max/1024/1024)+' МБ.');return}
+ const kind=blob.type.startsWith('image/')?'image':blob.type.startsWith('video/')?'video':'audio';
+ const record={id:'asset_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),ownerType:type,ownerId:String(id),type:kind,name:String(name||((kind==='audio'?'Голосовая запись':kind==='video'?'Видео':'Фото'))).slice(0,180),mime:blob.type||'application/octet-stream',created:Date.now(),blob};
+ try{await mpMediaPut(record);const key=mpOwnerKey(type,id);(mpMediaIndex[key]||(mpMediaIndex[key]=[])).push({id:record.id,type:kind,name:record.name,mime:record.mime,created:record.created});mpMediaUrls[record.id]=URL.createObjectURL(blob);toast('Материал сохранён на устройстве');go()}catch(e){console.error(e);toast('Не удалось сохранить файл. Проверьте свободное место.')}
+}
+async function mpMediaFiles(type,id,files){for(const f of Array.from(files||[]))await mpMediaSaveBlob(type,id,f,f.name)}
+async function mpMediaRemove(id){if(!confirm('Удалить этот материал из семейного архива?'))return;try{await mpMediaDelete(id);if(mpMediaUrls[id])URL.revokeObjectURL(mpMediaUrls[id]);delete mpMediaUrls[id];await mpMediaRefresh();go()}catch(e){toast('Не удалось удалить материал')}}
+async function mpRecordToggle(type,id){
+ const key=mpOwnerKey(type,id);
+ if(mpRecorder&&mpRecorderOwner===key){mpRecorder.stop();return}
+ if(mpRecorder)return toast('Сначала заверши текущую запись');
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return toast('Запись голоса недоступна в этом браузере');
+ try{
+  mpRecorderStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  mpRecorderChunks=[];mpRecorderOwner=key;
+  const options=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?{mimeType:'audio/webm;codecs=opus'}:{};
+  mpRecorder=new MediaRecorder(mpRecorderStream,options);
+  mpRecorder.ondataavailable=e=>{if(e.data&&e.data.size)mpRecorderChunks.push(e.data)};
+  mpRecorder.onstop=async()=>{const blob=new Blob(mpRecorderChunks,{type:mpRecorder.mimeType||'audio/webm'});const owner=mpRecorderOwner;mpRecorderStream?.getTracks().forEach(t=>t.stop());mpRecorder=null;mpRecorderStream=null;mpRecorderOwner=null;mpRecorderChunks=[];if(blob.size)await mpMediaSaveBlob(owner.split(':')[0],owner.slice(owner.indexOf(':')+1),blob,'Голосовая запись '+new Date().toLocaleString('ru-RU'));else go()};
+  mpRecorder.start();toast('Запись началась');go();
+ }catch(e){mpRecorderStream?.getTracks().forEach(t=>t.stop());mpRecorder=null;mpRecorderStream=null;mpRecorderOwner=null;toast('Не удалось получить доступ к микрофону')}
+}
+function mpBytesBase64(bytes){let out='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)out+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(out)}
+async function mpDataUrl(blob){return 'data:'+(blob.type||'application/octet-stream')+';base64,'+mpBytesBase64(new Uint8Array(await blob.arrayBuffer()))}
+function mpBookEscape(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function memBookOpen(){
+ const btn=event?.currentTarget;if(btn){btn.disabled=true;btn.textContent='Собираем книгу…'}
+ try{
+  const rows=await mpMediaAll(),byOwner={};
+  for(const row of rows){const k=mpOwnerKey(row.ownerType,row.ownerId);(byOwner[k]||(byOwner[k]=[])).push(row)}
+  const completed=[];
+  for(let i=1;i<=40;i++)if((MM.st[i]|0)===2)completed.push({i,title:MC[i-1][0],desc:MC[i-1][1],note:MM.nt[i]||'',media:byOwner[mpOwnerKey('memory',i)]||[]});
+  const notes=[...familyNotes].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(n=>({...n,media:byOwner[mpOwnerKey('note',n.id)]||[]}));
+  const mediaMarkup=async list=>{let out='';for(const m of list){const src=await mpDataUrl(m.blob),alt=mpBookEscape(m.name);if(m.type==='image')out+='<figure><img src="'+src+'" alt="'+alt+'"><figcaption>'+alt+'</figcaption></figure>';else if(m.type==='video')out+='<figure><video controls playsinline src="'+src+'"></video><figcaption>'+alt+'</figcaption></figure>';else out+='<figure class="audio"><div>Голосовая запись</div><audio controls src="'+src+'"></audio><figcaption>'+alt+'</figcaption></figure>'}return out};
+  let chapters='';
+  for(let n=0;n<10;n++){const group=completed.filter(c=>Math.floor((c.i-1)/4)===n);if(!group.length)continue;chapters+='<section class="chapter"><div class="chapter-kicker">ГЛАВА '+String(n+1).padStart(2,'0')+'</div><h2>'+mpBookEscape(MT[n])+'</h2>';for(const c of group){chapters+='<article class="story"><div class="story-number">ИСТОРИЯ '+String(c.i).padStart(2,'0')+'</div><h3>'+mpBookEscape(c.title)+'</h3><p>'+mpBookEscape(c.desc.replace(/~/g,' '))+'</p>'+(c.note?'<blockquote>'+mpBookEscape(c.note)+'</blockquote>':'')+await mediaMarkup(c.media)+'</article>'}chapters+='</section>'}
+  let notesHtml='';for(const n of notes){notesHtml+='<article class="story"><div class="story-number">'+mpBookEscape((n.date||'').split('-').reverse().join('.'))+'</div><h3>'+mpBookEscape(n.title)+'</h3><p>'+mpBookEscape(n.body)+'</p>'+await mediaMarkup(n.media)+'</article>'}
+  const total=completed.length,allMedia=rows.length;
+  const doc='<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>История нашего Босса</title><style>*{box-sizing:border-box}body{margin:0;background:#f4f0e8;color:#242b3b;font:16px/1.6 Georgia,serif}.toolbar{position:sticky;top:0;padding:12px;text-align:center;background:#101a32;color:white;z-index:2}.toolbar button{background:#c59b59;color:#111;border:0;border-radius:20px;padding:10px 18px;font-weight:bold;margin:0 5px}.cover{min-height:90vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px 22px;background:radial-gradient(circle,#263b61,#0c1428);color:#f5e5c2}.cover .mark{font-size:12px;letter-spacing:5px;color:#d7b477}.cover h1{font-size:clamp(42px,9vw,76px);line-height:1.05;margin:30px 0}.cover p{color:#ddc99e}.cover .lion{font-size:60px;margin:20px}.chapter{max-width:850px;margin:0 auto;padding:50px 22px}.chapter-kicker,.story-number{font:11px Arial,sans-serif;letter-spacing:3px;color:#987442}.chapter h2{font-size:38px;border-bottom:1px solid #cbb88f;padding-bottom:12px}.story{background:#fffdf8;border:1px solid #e4dccb;border-radius:14px;padding:22px;margin:22px 0;break-inside:avoid}.story h3{font-size:27px;margin:8px 0}.story p{white-space:pre-wrap}.story blockquote{margin:18px 0;padding:12px 18px;border-left:3px solid #b68b4d;background:#f6f0e4;white-space:pre-wrap}.story img,.story video{width:100%;max-height:560px;object-fit:contain;border-radius:8px;background:#111}.story figure{margin:16px 0}.story figcaption{font:12px Arial,sans-serif;color:#716b60;margin-top:5px}.story audio{width:100%}.story .audio{padding:15px;background:#f2ecdf;border-radius:8px}.end{max-width:850px;margin:0 auto;padding:70px 24px;text-align:center;background:#101a32;color:#f5e5c2}.end h2{font-size:36px}@media print{.toolbar{display:none}.cover,.end{print-color-adjust:exact;-webkit-print-color-adjust:exact}.chapter{padding:25px 18px}.story{box-shadow:none;break-inside:avoid}body{background:white}}@page{margin:15mm}</style><div class="toolbar"><button onclick="window.print()">Сохранить / распечатать в PDF</button><button onclick="window.close()">Закрыть книгу</button></div><header class="cover"><div class="mark">МАМЧКИН &amp; ПАПЧКИН · СЕМЕЙНЫЙ АРХИВ</div><div class="lion">♛</div><h1>История<br>нашего Босса</h1><p>40 маленьких историй, из которых складывается большая любовь</p><p>'+total+' из 40 историй · '+allMedia+' материалов · '+notes.length+' заметок</p></header>'+chapters+(notesHtml?'<section class="chapter"><div class="chapter-kicker">ДНЕВНИК СЕМЬИ</div><h2>Заметки, которые хочется сохранить</h2>'+notesHtml+'</section>':'')+'<footer class="end"><h2>Продолжение следует…</h2><p>С любовью, мама и папа</p><p>Однажды ты откроешь эту книгу и узнаешь, как сильно тебя ждали и любили с самого начала.</p></footer></html>';
+  const blob=new Blob([doc],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),win=window.open(url,'_blank');
+  if(!win){const a=document.createElement('a');a.href=url;a.download='Istoriya-nashego-Bossa.html';document.body.appendChild(a);a.click();a.remove();toast('Книга сохранена как HTML-файл')}
+  else setTimeout(()=>URL.revokeObjectURL(url),60000);
+  toast('Книга собрана. В ней '+total+' завершённых историй.');
+ }catch(e){console.error(e);toast('Не удалось собрать книгу. Проверьте хранилище устройства.')}
+ finally{if(btn){btn.disabled=false;btn.textContent='Собрать семейную книгу'}}
+}
+const mpMediaStyles=document.createElement('style');mpMediaStyles.textContent='.mp-media-box{margin:18px 0;padding:14px;border:1px solid rgba(197,155,89,.35);border-radius:14px;background:rgba(13,23,45,.38)}.mp-media-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.mp-media-item{min-width:0;padding:8px;background:rgba(255,255,255,.04);border-radius:10px}.mp-media-preview{display:block;width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:#090f1e}.mp-media-item audio{width:100%}.mp-media-caption{font-size:11px;overflow-wrap:anywhere;margin-top:6px}.mp-upload-label{display:inline-flex;align-items:center;position:relative;margin:8px 6px 0 0;cursor:pointer}.mp-upload-label input{position:absolute;width:1px;height:1px;opacity:0}.mp-media-box>.b{margin:8px 6px 0 0}';document.head.appendChild(mpMediaStyles);
+mv=function(){
+ const count={new:0,progress:0,done:0};for(let i=1;i<=40;i++){const st=MM.st[i]|0;count[st===2?'done':st===1?'progress':'new']++}
+ const next=Array.from({length:40},(_,i)=>i+1).find(i=>!(MM.st[i]|0))||0;
+ const head='<div class="mem-archive-head"><div class="mem-kicker">СЕМЕЙНЫЙ АРХИВ</div><h2>40 маленьких историй</h2><div class="mem-progress-line"><b>'+count.done+' / 40</b><span>историй сохранено</span></div><div class="mem-progress-track"><i style="width:'+(count.done*100/40)+'%"></i></div><div class="mem-summary">Открыто: '+(40-count.new)+' из 40 · Не выполнено: '+count.progress+'</div></div>';
+ if(memCard){const i=memCard,[title,desc]=MC[i-1],st=MM.st[i]|0;return '<button class="b s sm" onclick="A.memCloseCard()">← Назад</button>'+head+'<article class="mem-open-card"><div class="mem-open-meta">'+E(MT[(i-1)>>2])+' · ИСТОРИЯ '+String(i).padStart(2,'0')+' / 40</div><h2 class="mem-open-title">'+E(title)+'</h2><div class="mem-open-description">'+E(desc.replace(/~/g,'\n')).replace(/\n/g,'<br>')+'</div>'+mpMediaHtml('memory',i)+'<details class="mem-note-details" '+(MM.nt[i]?'open':'')+'><summary>Добавить заметку к истории</summary><textarea id="mem-note-'+i+'" onchange="A.mn('+i+',this.value)" placeholder="Что хочется сохранить об этом моменте?">'+E(MM.nt[i]||'')+'</textarea></details><div class="mem-actions">'+(st===2?'<button class="b s" onclick="A.memStatus('+i+',1)">Вернуть в «Не выполнено»</button>':'<button class="b" onclick="A.memStatus('+i+',2)">✓ Выполнено</button><button class="b s" onclick="A.memStatus('+i+',1)">Отложить</button>')+'</div></article>'}
+ if(memPile){const ids=Array.from({length:40},(_,i)=>i+1).filter(i=>(MM.st[i]|0)===(memPile==='done'?2:1));return '<button class="b s sm" onclick="A.memHome()">← К колоде</button>'+head+'<div class="mem-pile-heading"><h3>'+(memPile==='done'?'Выполнено':'Не выполнено')+'</h3><span>'+ids.length+' историй</span></div><div class="mem-list">'+(ids.length?ids.map(i=>'<button class="mem-list-item" onclick="A.memOpen('+i+')"><span class="mem-list-number">'+String(i).padStart(2,'0')+'</span><span class="mem-list-copy"><b>'+E(MC[i-1][0])+'</b><small>'+E(MT[(i-1)>>2])+'</small></span><span class="mem-list-arrow">›</span></button>').join(''):'<div class="mem-empty">Здесь пока нет историй.</div>')+'</div>'}
+ return head+'<div class="mem-deck-wrap">'+(next?'<button class="mem-big-back" onclick="A.memOpen('+next+')" aria-label="Открыть следующую историю"><span class="mem-big-number">'+String(next).padStart(2,'0')+' / 40</span><span class="mem-big-brand">МАМЧКИН &amp; ПАПЧКИН</span><svg class="mem-big-lion" viewBox="0 0 100 100" aria-hidden="true"><use href="#lion"></use></svg><span class="mem-big-plaque">РЕЖИМ<br>СОХРАНЕНИЯ</span><span class="mem-big-cta">НАЖМИ, ЧТОБЫ ОТКРЫТЬ</span></button>':'<div class="mem-deck-finished"><div>✓</div><b>Все 40 историй открыты</b><span>Теперь можно собрать вашу семейную книгу.</span></div>')+'</div><div class="mem-piles"><button class="mem-pile-link" onclick="A.memList(\'progress\')"><span>Не выполнено</span><b>'+count.progress+'</b></button><button class="mem-pile-link" onclick="A.memList(\'done\')"><span>Выполнено</span><b>'+count.done+'</b></button></div><button class="b" style="width:100%;margin-top:16px" onclick="memBookOpen()">'+(count.done===40?'Собрать семейную книгу':'Предпросмотр семейной книги')+'</button><p class="mu mem-note">Фото, видео, голосовые и заметки прикрепляются прямо к истории. Материалы сохраняются на этом устройстве.</p><button class="mem-help-link" onclick="A.mi()">Как устроен семейный архив</button>';
+};
+const mpOriginalNotesView=notesView;
+notesView=function(){
+ if(!notesReady)return '<p class="mu">Загружаем семейные заметки…</p>';
+ const entries=familyNotes.filter(n=>n.date===notesDate).sort((a,b)=>(a.created||0)-(b.created||0)),fmtDate=notesDate.split('-').reverse().join('.'),editing=notesEditing?familyNotes.find(x=>x.id===notesEditing):null;
+ return '<button class="b s sm" onclick="tab=\'home\';go()">← На главную</button><div class="notes-page-head"><img src="notes-dreamer.webp" alt="Львёнок-мечтатель"><div><h2>Наши заметки</h2><p>Маленькие события, которые хочется сохранить. Каждый день — часть вашей семейной истории.</p></div></div><div class="notes-calendar"><label for="notes-date">Выберите день</label><input id="notes-date" type="date" value="'+notesDate+'" onchange="notesDateChange(this.value)"></div><h2>'+fmtDate+' · События дня</h2><div class="notes-form"><h3>'+(editing?'Изменить событие':'Что важного произошло?')+'</h3><input id="note-title" maxlength="100" placeholder="Название события" value="'+(editing?E(editing.title):'')+'"><textarea id="note-body" maxlength="5000" placeholder="Запишите этот момент, чтобы он остался с вами...">'+(editing?E(editing.body):'')+'</textarea><button class="b" onclick="notesSave()">Сохранить</button>'+(editing?'<button class="b s" onclick="notesCancelEdit()">Отмена</button>':'')+'</div><h2>Записи за этот день <span class="tg">'+entries.length+'</span></h2>'+(entries.map(n=>'<article class="notes-entry"><h3>'+E(n.title)+'</h3><p>'+E(n.body)+'</p>'+mpMediaHtml('note',n.id)+'<div class="notes-entry-actions"><button class="b s sm" onclick="notesEdit(\''+n.id+'\')">Изменить</button><button class="b s sm" onclick="notesDelete(\''+n.id+'\')">Удалить</button></div></article>').join('')||'<p class="mu">Пока нет записей за этот день. Сохраните первое событие.</p>');
+};
+
 </script></body></html>
