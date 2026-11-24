@@ -38,6 +38,11 @@ assert.ok(html.includes('onclick="notesBookOpen()"'), 'Notes screen must expose 
 assert.ok(html.includes('Хронология') && html.includes('Segoe Script'), 'Notes book must provide chronological navigation and handwritten dates');
 assert.ok(html.includes('Печать / сохранить PDF'), 'Notes book must offer print-to-PDF');
 assert.ok(html.includes("byOwner[mpOwnerKey('note',n.id)]"), 'Notes book must include media attached to notes');
+assert.ok(html.includes("if(type==='note')return '<div class=\"mp-media-box\""), 'Notes must expose a photo-only attachment control');
+assert.ok(html.includes("accept=\"image/*\" multiple onchange=\"mpMediaFiles('note'"), 'Notes attachment picker must accept images only');
+assert.ok(html.includes("if(type==='note'&&!blob.type.startsWith('image/'))"), 'Notes media storage must reject non-image files');
+assert.ok(html.includes("if(type==='note')return toast('В заметки можно добавлять только фотографии.')"), 'Voice recording must be disabled for notes');
+
 
 for (const name of ['notesView', 'notesSave', 'notesEdit', 'notesDelete', 'notesPersist', 'notesDateChange']) {
   assert.ok(html.includes('function ' + name + '('), 'Missing notes function: ' + name);
