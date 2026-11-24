@@ -8,7 +8,7 @@
     "prepare:web": "node scripts/prepare-web.mjs",
     "cap:add:android": "cap add android",
     "cap:sync": "npm run prepare:web && cap sync android",
-    "verify": "node scripts/verify-app.mjs",
+    "verify": "node scripts/verify-app.mjs && node scripts/verify-notes-storage.mjs",
     "verify:supabase": "node scripts/verify-supabase.mjs"
   },
   "dependencies": {
