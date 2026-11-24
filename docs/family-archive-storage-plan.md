@@ -1,10 +1,13 @@
 # Family archive: local storage implementation plan
 
-Status: design only. No native storage plugin is installed yet, and the current app continues to use the versioned localStorage envelope for notes.
+Status: first implementation committed on `rustore/native-family-notes`; CI and real-device verification are pending. `@capacitor/preferences` 8.0.1 is wired to the notes module through a bundled adapter. Browser/PWA continues to use a localStorage fallback.
 
 ## Current state
 
 - Current notes key: `mp2_family_notes_v2`, envelope schema version 1.
+- Android uses Capacitor Preferences (`SharedPreferences`) as the primary store; web/PWA uses the localStorage adapter.
+- The Android build bundles `src/notes-storage.js` into `www/notes-storage.js`; `prepare-web` first copies the browser fallback, then CI overwrites it with the native bundle.
+- Startup reads native preferences first, then migrates from v2 localStorage or the legacy key. Native writes are read back and compared before they are treated as successful.
 - Recovery source: legacy key `mp2_family_notes`; it is intentionally retained and never deleted by the current migration.
 - Notes CRUD rolls back in-memory changes when persistence fails.
 - Personal notes and future family media are not sent to Supabase.
@@ -16,7 +19,7 @@ Status: design only. No native storage plugin is installed yet, and the current 
 
 The current notes are small key/value data, not yet a relational archive. Capacitor Preferences maps to Android SharedPreferences and provides a native persistence layer; its documentation explicitly says it is for lightweight data, not a database. Keep the web/PWA fallback on localStorage.
 
-Do not add the plugin until the app has a small bundled bridge and an asynchronous startup gate. The current app is a classic inline-script application; simply installing a Capacitor package does not make its ESM API safely available to that script. Notes must not render from an empty localStorage snapshot before the native read completes.
+Implemented on the feature branch: the plugin is bundled into a small classic-script bridge, and notes initialization is asynchronous. The notes view shows a loading state until the native-first read/migration completes. Do not remove the fallback adapter or recovery keys until device testing passes.
 
 ### Later: SQLite + app-private files when the archive grows
 
@@ -47,3 +50,12 @@ The currently investigated `@capacitor-community/sqlite@8.1.1` declares a Capaci
 - Verify the exact Capacitor plugin version against Capacitor 8.6.2 and build it in CI.
 - Do not change game progress, cards, deck content, Supabase policies, or unrelated localStorage keys during this work.
 - Do not claim real-device persistence until it has been tested on an Android device.
+
+
+## Current implementation notes
+
+- `@capacitor/preferences` is pinned to 8.0.1 for the project's Capacitor 8.6.2 line; npm metadata lists 8.0.1 as the stable v8 package and describes it as lightweight key/value storage. See the package and official API documentation before upgrading.
+- `esbuild` is pinned to 0.28.2 and bundles the ESM plugin imports for the app's classic inline-script runtime.
+- Native writes are verified by reading the exact serialized envelope back. On native failure, the app falls back to localStorage and displays a warning instead of silently claiming native persistence.
+- The localStorage v2 and legacy keys remain as recovery copies. No user note is sent to Supabase.
+- CI tests simulate native Preferences, migration, relaunch, precedence, invalid dates, and native failure fallback. They do not replace a physical Android force-stop/relaunch test.
