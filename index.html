@@ -849,7 +849,7 @@ async function notesBookOpen(){
   const dateLabel=v=>{const d=new Date(v+'T12:00:00');return d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})};
   let index='',pages='';
   for(let i=0;i<notes.length;i++){
-   const n=notes[i],id='entry-'+i,media=await mediaMarkup(byOwner[mpOwnerKey('note',n.id)]||[]);
+   const n=notes[i],id='entry-'+i,media=await mediaMarkup((byOwner[mpOwnerKey('note',n.id)]||[]).filter(m=>m.type==='image'));
    index+='<a href="#'+id+'"><time>'+mpBookEscape(dateLabel(n.date))+'</time><span>'+mpBookEscape(n.title||'Без названия')+'</span></a>';
    pages+='<article class="page" id="'+id+'"><div class="date">'+mpBookEscape(dateLabel(n.date))+'</div><div class="ornament">✦　✦　✦</div><h2>'+mpBookEscape(n.title||'Без названия')+'</h2><p class="handwriting">'+mpBookEscape(n.body||'').replace(/\n/g,'<br>')+'</p>'+media+'<div class="page-number">'+String(i+1).padStart(2,'0')+'</div></article>';
   }
@@ -884,26 +884,30 @@ async function mpMediaRefresh(){
 }
 function mpMediaEsc(v){return E(String(v||''))}
 function mpMediaHtml(type,id){
- const key=mpOwnerKey(type,id),items=mpMediaIndex[key]||[];
+ const key=mpOwnerKey(type,id),allItems=mpMediaIndex[key]||[],items=type==='note'?allItems.filter(m=>m.type==='image'):allItems;
  const cards=items.map(m=>{const url=mpMediaUrls[m.id]||'';const name=mpMediaEsc(m.name);let player='';
   if(m.type==='image')player='<img class="mp-media-preview" src="'+url+'" alt="'+name+'">';
   else if(m.type==='video')player='<video class="mp-media-preview" controls playsinline preload="metadata" src="'+url+'"></video>';
   else player='<audio controls preload="metadata" src="'+url+'"></audio>';
   return '<div class="mp-media-item">'+player+'<div class="mp-media-caption">'+name+' <button class="b s sm" onclick="mpMediaRemove(\''+m.id+'\')">Удалить</button></div></div>';
  }).join('');
- return '<div class="mp-media-box"><div class="mp-media-items">'+cards+'</div><label class="b s sm mp-upload-label">＋ Добавить фото, видео или аудио<input type="file" accept="image/*,video/*,audio/*" multiple onchange="mpMediaFiles(\''+type+'\',\''+String(id).replace(/'/g,'')+'\',this.files);this.value=\'\'"></label><button class="b s sm" onclick="mpRecordToggle(\''+type+'\',\''+String(id).replace(/'/g,'')+'\')">'+(mpRecorder&&mpRecorderOwner===key?'■ Завершить голосовую запись':'🎙 Записать голосовое')+'</button>'+(mpRecorder&&mpRecorderOwner===key?'<small class="mu">Идёт запись… Нажми «Завершить голосовую запись».</small>':'')+'</div>';
+ const safeId=String(id).replace(/'/g,'');
+ if(type==='note')return '<div class="mp-media-box"><div class="mp-media-items">'+cards+'</div><label class="b s sm mp-upload-label">＋ Добавить фото<input type="file" accept="image/*" multiple onchange="mpMediaFiles(\'note\',\''+safeId+'\',this.files);this.value=\'\'"></label></div>';
+ return '<div class="mp-media-box"><div class="mp-media-items">'+cards+'</div><label class="b s sm mp-upload-label">＋ Добавить фото, видео или аудио<input type="file" accept="image/*,video/*,audio/*" multiple onchange="mpMediaFiles(\''+type+'\',\''+safeId+'\',this.files);this.value=\'\'"></label><button class="b s sm" onclick="mpRecordToggle(\''+type+'\',\''+safeId+'\')">'+(mpRecorder&&mpRecorderOwner===key?'■ Завершить голосовую запись':'🎙 Записать голосовое')+'</button>'+(mpRecorder&&mpRecorderOwner===key?'<small class="mu">Идёт запись… Нажми «Завершить голосовую запись».</small>':'')+'</div>';
 }
 async function mpMediaSaveBlob(type,id,blob,name){
  if(!blob||!blob.size)return;
+ if(type==='note'&&!blob.type.startsWith('image/')){toast('В заметки можно прикреплять только фотографии.');return}
  const max=blob.type.startsWith('video/')?100*1024*1024:blob.type.startsWith('image/')?25*1024*1024:40*1024*1024;
  if(blob.size>max){toast('Файл слишком большой. Максимум: '+(max/1024/1024)+' МБ.');return}
  const kind=blob.type.startsWith('image/')?'image':blob.type.startsWith('video/')?'video':'audio';
  const record={id:'asset_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),ownerType:type,ownerId:String(id),type:kind,name:String(name||((kind==='audio'?'Голосовая запись':kind==='video'?'Видео':'Фото'))).slice(0,180),mime:blob.type||'application/octet-stream',created:Date.now(),blob};
  try{await mpMediaPut(record);const key=mpOwnerKey(type,id);(mpMediaIndex[key]||(mpMediaIndex[key]=[])).push({id:record.id,type:kind,name:record.name,mime:record.mime,created:record.created});mpMediaUrls[record.id]=URL.createObjectURL(blob);toast('Материал сохранён на устройстве');go()}catch(e){console.error(e);toast('Не удалось сохранить файл. Проверьте свободное место.')}
 }
-async function mpMediaFiles(type,id,files){for(const f of Array.from(files||[]))await mpMediaSaveBlob(type,id,f,f.name)}
+async function mpMediaFiles(type,id,files){const selected=Array.from(files||[]);if(type==='note'&&selected.some(f=>!f.type.startsWith('image/')))toast('В заметки добавляются только фотографии.');for(const f of selected)if(type!=='note'||f.type.startsWith('image/'))await mpMediaSaveBlob(type,id,f,f.name)}
 async function mpMediaRemove(id){if(!confirm('Удалить этот материал из семейного архива?'))return;try{await mpMediaDelete(id);if(mpMediaUrls[id])URL.revokeObjectURL(mpMediaUrls[id]);delete mpMediaUrls[id];await mpMediaRefresh();go()}catch(e){toast('Не удалось удалить материал')}}
 async function mpRecordToggle(type,id){
+ if(type==='note')return toast('В заметки можно добавлять только фотографии.');
  const key=mpOwnerKey(type,id);
  if(mpRecorder&&mpRecorderOwner===key){mpRecorder.stop();return}
  if(mpRecorder)return toast('Сначала заверши текущую запись');
