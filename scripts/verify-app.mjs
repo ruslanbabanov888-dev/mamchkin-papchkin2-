@@ -33,6 +33,12 @@ assert.ok(html.includes("'+(+a[3]&&!g.tm?'disabled':'')+'"), 'Team and Secret ch
 assert.ok(html.includes("Настроить абонемент</h3>") && !html.includes('Настроить пустые абонементы'), 'Secret coupons must be configured when received, not in a separate setup section');
 
 
+assert.ok(html.includes('async function notesBookOpen()'), 'Standalone notes book builder is missing');
+assert.ok(html.includes('onclick="notesBookOpen()"'), 'Notes screen must expose the notes book action');
+assert.ok(html.includes('Хронология') && html.includes('Segoe Script'), 'Notes book must provide chronological navigation and handwritten dates');
+assert.ok(html.includes('Печать / сохранить PDF'), 'Notes book must offer print-to-PDF');
+assert.ok(html.includes("byOwner[mpOwnerKey('note',n.id)]"), 'Notes book must include media attached to notes');
+
 for (const name of ['notesView', 'notesSave', 'notesEdit', 'notesDelete', 'notesPersist', 'notesDateChange']) {
   assert.ok(html.includes('function ' + name + '('), 'Missing notes function: ' + name);
 }
