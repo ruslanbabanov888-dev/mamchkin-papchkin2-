@@ -32,8 +32,8 @@ assert.ok(html.includes('sb_publishable_'), 'Supabase publishable key is missing
 assert.ok(!html.includes('service_role') && !html.includes('sb_secret_'), 'A privileged Supabase key must never ship in the app');
 assert.ok(html.includes('using bundled game data'), 'Bundled offline fallback is missing');
 assert.ok(html.includes('groups.c.length===30') && html.includes('groups.k.length===20') && html.includes('groups.r.length===20'), 'Remote card payload validation is incomplete');
-const contentMigration = await read('../supabase/migrations/20261124000000_create_app_content.sql');
-const seedMigration = await read('../supabase/migrations/20261124000100_seed_base_game_content.sql');
+const contentMigration = await read('../supabase/migrations/20261124060856_create_app_content.sql');
+const seedMigration = await read('../supabase/migrations/20261124060936_seed_base_game_content.sql');
 assert.ok(contentMigration.includes('enable row level security'), 'Shared content migration must enable RLS');
 assert.ok(contentMigration.includes('grant select on table public.app_content to anon, authenticated'), 'Shared content must grant read-only access');
 assert.ok(contentMigration.includes('revoke all on table public.app_content'), 'Shared content must revoke client writes');
