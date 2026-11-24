@@ -705,10 +705,38 @@ addEventListener('pagehide',()=>{mstop();if(AU.audio){AU.audio.pause();AU.audio=
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 loadSharedBaseContent();
 
+const NOTES_STORAGE_KEY='mp2_family_notes_v2';
+const NOTES_LEGACY_KEY='mp2_family_notes';
+function notesNormalize(items){
+ if(!Array.isArray(items))return [];
+ return items.filter(n=>n&&typeof n==='object'&&typeof n.id==='string'&&notesValidDate(n.date))
+  .map(n=>({id:n.id.slice(0,80),date:n.date,title:String(n.title||'Без названия').slice(0,100),body:String(n.body||'').slice(0,5000),created:Number.isFinite(Number(n.created))?Number(n.created):Date.now(),...(Number.isFinite(Number(n.updated))?{updated:Number(n.updated)}:{})}));
+}
+function notesLoad(){
+ try{
+  const current=localStorage.getItem(NOTES_STORAGE_KEY);
+  if(current){
+   const parsed=JSON.parse(current);
+   if(parsed&&parsed.schemaVersion===1&&Array.isArray(parsed.entries))return notesNormalize(parsed.entries);
+  }
+  const legacy=JSON.parse(localStorage.getItem(NOTES_LEGACY_KEY)||'[]');
+  const migrated=notesNormalize(legacy);
+  // Keep the original key untouched as a recovery copy until a future
+  // native-storage migration has been verified on real devices.
+  if(migrated.length)try{localStorage.setItem(NOTES_STORAGE_KEY,JSON.stringify({schemaVersion:1,updatedAt:new Date().toISOString(),entries:migrated}))}catch(e){}
+  return migrated;
+ }catch(e){return []}
+}
 let notesDate=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
-let familyNotes=(()=>{try{const x=JSON.parse(localStorage.getItem('mp2_family_notes')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}})();
+let familyNotes=notesLoad();
 let notesEditing=null;
-function notesPersist(){try{localStorage.setItem('mp2_family_notes',JSON.stringify(familyNotes));return true}catch(e){toast('Не удалось сохранить заметку. Возможно, закончилось место на устройстве.');return false}}
+function notesPersist(){
+ try{
+  const payload={schemaVersion:1,updatedAt:new Date().toISOString(),entries:notesNormalize(familyNotes)};
+  localStorage.setItem(NOTES_STORAGE_KEY,JSON.stringify(payload));
+  return true;
+ }catch(e){toast('Не удалось сохранить заметку. Возможно, закончилось место на устройстве.');return false}
+}
 function notesValidDate(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const [y,m,d]=v.split('-').map(Number);const date=new Date(y,m-1,d);return date.getFullYear()===y&&date.getMonth()===m-1&&date.getDate()===d}
 function notesDateChange(v){if(!notesValidDate(v))return;notesDate=v;notesEditing=null;go()}
 function notesSave(){
