@@ -11,6 +11,7 @@ on:
       - rustore/fix-round-launcher-icon
       - rustore/rose-gold-icon-fix
       - rustore/selected-cinematic-music
+      - rustore/native-family-notes
 
 permissions:
   contents: read
