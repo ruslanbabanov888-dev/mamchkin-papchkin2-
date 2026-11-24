@@ -18,6 +18,21 @@ for (const [, attributes, source] of scripts) {
 }
 assert.ok(parsedScripts > 0, 'No inline application scripts were checked');
 
+assert.ok(html.includes('MP_FAMILY_BOOK_V1'), 'Family media/book feature marker is missing');
+assert.ok(html.includes("const MP_MEDIA_DB='mp2-family-media-v1'"), 'Local family media database is missing');
+assert.ok(html.includes("indexedDB.open(MP_MEDIA_DB,1)"), 'Family media must use persistent IndexedDB storage');
+assert.ok(html.includes('async function mpMediaSaveBlob'), 'Media attachment persistence is missing');
+assert.ok(html.includes('async function mpRecordToggle'), 'Voice recording workflow is missing');
+assert.ok(html.includes('async function memBookOpen'), 'Interactive family book export is missing');
+assert.ok(html.includes('window.print()'), 'Family book must offer print-to-PDF');
+assert.ok(html.includes('Собрать семейную книгу'), 'Family book action is missing');
+assert.ok(html.includes("mpMediaHtml('memory',i)"), 'Memory cards must support attached media');
+assert.ok(html.includes("mpMediaHtml('note',n.id)"), 'Family notes must be included with attached media');
+assert.ok(html.includes("mpMediaRefresh();"), 'Stored family media must be indexed on startup');
+assert.ok(html.includes("'+(+a[3]&&!g.tm?'disabled':'')+'"), 'Team and Secret challenge results must wait for manual timer start');
+assert.ok(html.includes("Настроить абонемент</h3>") && !html.includes('Настроить пустые абонементы'), 'Secret coupons must be configured when received, not in a separate setup section');
+
+
 for (const name of ['notesView', 'notesSave', 'notesEdit', 'notesDelete', 'notesPersist', 'notesDateChange']) {
   assert.ok(html.includes('function ' + name + '('), 'Missing notes function: ' + name);
 }
