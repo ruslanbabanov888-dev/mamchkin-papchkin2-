@@ -7,7 +7,6 @@ const html = await read('../index.html');
 const prepare = await read('./prepare-web.mjs');
 const serviceWorker = await read('../sw.js');
 
-// Parse every inline JavaScript block without executing browser code.
 const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 let parsedScripts = 0;
 for (const [, attributes, source] of scripts) {
@@ -19,7 +18,6 @@ for (const [, attributes, source] of scripts) {
 }
 assert.ok(parsedScripts > 0, 'No inline application scripts were checked');
 
-// Notes are deliberately stored separately from the game save.
 for (const name of ['notesView', 'notesSave', 'notesEdit', 'notesDelete', 'notesPersist', 'notesDateChange']) {
   assert.ok(html.includes('function ' + name + '('), 'Missing notes function: ' + name);
 }
@@ -28,7 +26,6 @@ assert.ok(html.includes("if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v))"), 'Notes date va
 assert.ok(html.includes('src="notes-calm.webp"'), 'Home lion image is not referenced');
 assert.ok(html.includes('src="notes-dreamer.webp"'), 'Notes lion image is not referenced');
 
-// Ensure both lion assets are copied into the Capacitor WebView bundle and cached offline.
 for (const asset of ['notes-calm.webp', 'notes-dreamer.webp']) {
   assert.ok(prepare.includes("'" + asset + "'"), 'prepare-web does not copy ' + asset);
   assert.ok(serviceWorker.includes("'" + asset + "'"), 'Service worker does not cache ' + asset);
