@@ -707,6 +707,7 @@ loadSharedBaseContent();
 
 const NOTES_STORAGE_KEY='mp2_family_notes_v2';
 const NOTES_LEGACY_KEY='mp2_family_notes';
+// Keep the original localStorage key untouched as a recovery copy during native migration.
 function notesNormalize(items){
  if(!Array.isArray(items))return [];
  return items.filter(n=>n&&typeof n==='object'&&typeof n.id==='string'&&notesValidDate(n.date))
