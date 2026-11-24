@@ -22,6 +22,11 @@ for (const name of ['notesView', 'notesSave', 'notesEdit', 'notesDelete', 'notes
   assert.ok(html.includes('function ' + name + '('), 'Missing notes function: ' + name);
 }
 assert.ok(html.includes("'mp2_family_notes'"), 'Notes storage key is missing');
+assert.ok(html.includes("const NOTES_STORAGE_KEY='mp2_family_notes_v2'"), 'Versioned notes storage key is missing');
+assert.ok(html.includes('function notesNormalize(items)'), 'Notes schema normalization is missing');
+assert.ok(html.includes('function notesLoad()'), 'Notes migration loader is missing');
+assert.ok(html.includes('schemaVersion:1') && html.includes('updatedAt:new Date().toISOString()'), 'Versioned notes envelope is missing');
+assert.ok(html.includes('NOTES_LEGACY_KEY') && html.includes('recovery copy'), 'Legacy notes must remain available as a recovery copy');
 assert.ok(html.includes('function notesValidDate(v)'), 'Strict calendar date validation is missing');
 assert.ok(html.includes('if(!notesPersist()){familyNotes=previous;return}'), 'Notes must not report success when local persistence fails');
 assert.ok(html.includes("if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v))"), 'Notes date validator is incorrect');
