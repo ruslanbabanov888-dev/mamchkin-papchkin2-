@@ -20,7 +20,8 @@ const OPTIONAL_FILES = [
   'h-secret.jpg',
   'h-memories.jpg',
   'notes-calm.webp',
-  'notes-dreamer.webp'
+  'notes-dreamer.webp',
+  'notes-storage.js'
 ];
 
 const STATIC_DESTINATIONS = new Set([
