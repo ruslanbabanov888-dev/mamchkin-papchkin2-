@@ -34,6 +34,8 @@ jobs:
         run: npm install
       - name: Verify app source and local assets
         run: npm run verify
+      - name: Verify published Supabase content
+        run: npm run verify:supabase
       - name: Prepare web assets
         run: npm run prepare:web
       - name: Add Android platform
