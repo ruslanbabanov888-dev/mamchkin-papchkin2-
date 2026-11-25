@@ -1032,7 +1032,7 @@ mpMediaRefresh();
    if(target)await mpMediaFiles('note',target,files);
   }
  };
- notesView=function notesView(){
+ notesView=function(){
   if(!notesReady)return '<p class="mu">Загружаем семейные заметки…</p>';
   const entries=familyNotes.filter(n=>n.date===notesDate).sort((a,b)=>(a.created||0)-(b.created||0));
   const fmtDate=notesDate.split('-').reverse().join('.'),editing=notesEditing?familyNotes.find(x=>x.id===notesEditing):null;
