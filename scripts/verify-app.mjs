@@ -40,7 +40,7 @@ assert.ok(html.includes('Печать / сохранить PDF'), 'Notes book mu
 assert.ok(html.includes("byOwner[mpOwnerKey('note',n.id)]"), 'Notes book must include media attached to notes');
 assert.ok(html.includes("if(type==='note')return '<div class=\"mp-media-box\""), 'Notes must expose a photo-only attachment control');
 assert.ok(
-  /accept="image\\/\\*"[\\s]+multiple[\\s]+onchange="mpMediaFiles\\(\\\\?'note\\\\?'/.test(html),
+  /accept="image\/\*"\s+multiple\s+onchange="mpMediaFiles\(\\?'note\\?'/.test(html),
   'Notes attachment picker must accept images only'
 );
 assert.ok(html.includes("if(type==='note'&&!blob.type.startsWith('image/'))"), 'Notes media storage must reject non-image files');
