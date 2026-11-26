@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+const pkg=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
+assert.ok(html.includes('MP_BOOK_VIEWER_V2'),'In-app book viewer is missing');
+assert.ok(html.includes('Сохранить HTML')&&html.includes('Сохранить / распечатать PDF')&&html.includes('Закрыть книгу'),'Book actions are incomplete');
+assert.ok(html.includes('MP_BOOK_TITLE_KEY')&&html.includes('Маленькая большая история'),'Editable family book title is missing');
+assert.ok(html.includes('mpBookPresent(doc,bookTitle)')&&html.includes('mpBookPresent(doc,notesBookTitle)'),'Both books must use the in-app viewer');
+assert.ok(pkg.dependencies['@capgo/capacitor-printer'],'Native printer dependency is missing');
+console.log('Book viewer verification passed.');
