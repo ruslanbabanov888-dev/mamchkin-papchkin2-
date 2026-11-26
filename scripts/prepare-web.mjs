@@ -9,6 +9,7 @@ const webDir = resolve(root, 'www');
 const files = [
   'index.html',
   'notes-storage.js',
+  'printer.js',
   'emblem.png',
   'h-waiting.jpg',
   'h-team.jpg',
