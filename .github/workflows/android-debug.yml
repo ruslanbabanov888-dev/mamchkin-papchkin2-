@@ -41,6 +41,8 @@ jobs:
         run: npm run prepare:web
       - name: Build native notes storage adapter
         run: npm run build:notes-storage
+      - name: Build native printer bridge
+        run: npm run build:printer
       - name: Add Android platform
         run: npx cap add android
       - name: Install Rose Gold app launcher icons
