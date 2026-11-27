@@ -41,6 +41,8 @@ jobs:
         run: npm run build:notes-storage
       - name: Add Android platform
         run: npx cap add android
+      - name: Configure Android microphone permissions
+        run: node scripts/add-android-audio-permissions.mjs
       - name: Install app launcher icons
         run: node scripts/install-android-icon.mjs
       - name: Sync Capacitor
