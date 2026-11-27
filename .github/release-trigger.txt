@@ -1,1 +1,1 @@
-Trigger Android RuStore release workflow from rustore/native-family-notes.
+Trigger Android RuStore release workflow after signing script fix.
