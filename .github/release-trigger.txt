@@ -6,3 +6,4 @@ Release build after successful book export verification
 Final ZIP filename follows editable book title
 
 Wax seal refinement build trigger 2026-11-27
+Build from merged main: 2026-11-27
