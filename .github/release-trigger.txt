@@ -1,1 +1,1 @@
-Rebuild after book-viewer verification assertion fix
+Rebuild after fixing book download, title and cover editor, native PDF printing, and sealed-envelope artwork.
