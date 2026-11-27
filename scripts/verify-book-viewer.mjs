@@ -6,7 +6,7 @@ assert.ok(html.includes('MP_BOOK_VIEWER_V2'),'In-app book viewer is missing');
 assert.ok(html.includes('Скачать книгу')&&html.includes('PDF / Печать')&&html.includes('Закрыть книгу'),'Book actions are incomplete');
 assert.ok(html.includes('<script src="notes-storage.js"></script><script src="printer.js"></script>'),'Printer bridge script tags are not correctly closed/loaded');
 assert.ok(html.includes('navigator.canShare({files:[file]})'),'Android file sharing fallback is missing');
-assert.ok(html.includes('.mp-tc-envelope')&&html.includes('.mp-tc-seal svg{display:block;width:100%;height:100%}'),'Time-capsule envelope styling is missing from the generated book');
+assert.ok(html.includes('.mp-tc-envelope')&&html.includes('.mp-tc-seal svg{display:block;width:100%;height:100%;max-width:74px'),'Time-capsule envelope styling is missing from the generated book');
 assert.ok(html.includes('window.MPPrinter?.printHtml'),'PDF export must use the native printer bridge');
 assert.ok(html.includes('MP_BOOK_TITLE_KEY')&&html.includes('Маленькая большая история'),'Editable family book title is missing');
 assert.ok(html.includes('mpBookPresent(doc,bookTitle)')&&html.includes('mpBookPresent(doc,notesBookTitle)'),'Both books must use the in-app viewer');
