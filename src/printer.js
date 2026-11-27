@@ -1,5 +1,5 @@
 import { Printer } from '@capgo/capacitor-printer';
-import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 
@@ -45,6 +45,7 @@ window.MPPrinter = {
       path: name,
       data: toBase64(html),
       directory: Directory.Cache,
+      encoding: Encoding.BASE64,
       recursive: true
     });
     await Share.share({
