@@ -1,1 +1,1 @@
-Trigger Android RuStore release workflow after signing script fix.
+Fix book download, Android PDF print bridge and time-capsule envelope rendering
