@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - main
       - rustore/native-family-notes
     paths:
       - .github/release-trigger.txt
