@@ -3,3 +3,4 @@ Family book cover and standalone ZIP export — validation build
 Family book export syntax validation
 Verify standalone ZIP bridge assertion
 Release build after successful book export verification
+Final ZIP filename follows editable book title
