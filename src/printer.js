@@ -32,7 +32,7 @@ function completeHtmlDocument(input, name = 'Семейная книга') {
   const printStyle = parsed.createElement('style');
   printStyle.textContent = '@page{size:A4;margin:14mm}html,body{height:auto!important;min-height:0!important}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}img,video,figure,article,section{break-inside:avoid}';
   parsed.head.appendChild(printStyle);
-  return '<!doctype html>\\n' + parsed.documentElement.outerHTML;
+  return '<!doctype html>\n' + parsed.documentElement.outerHTML;
 }
 
 function browserDownload(html, name) {
