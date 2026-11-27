@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - fix/family-book-audio-download
       - rustore/capacitor-android-setup
       - rustore/app-icon
       - rustore/fix-launcher-icon
