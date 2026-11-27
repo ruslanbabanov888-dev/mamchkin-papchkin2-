@@ -8,8 +8,17 @@ function safeFileName(value) {
   return /\.html$/i.test(clean) ? clean : clean + '.html';
 }
 
-function toBase64(text) {
-  const bytes = new TextEncoder().encode(text);
+function toBase64(value) {
+  let bytes;
+  if (typeof value === 'string') {
+    bytes = new TextEncoder().encode(value);
+  } else if (value instanceof ArrayBuffer) {
+    bytes = new Uint8Array(value);
+  } else if (ArrayBuffer.isView(value)) {
+    bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  } else {
+    bytes = new TextEncoder().encode(String(value ?? ''));
+  }
   let binary = '';
   const chunk = 0x8000;
   for (let i = 0; i < bytes.length; i += chunk) {
