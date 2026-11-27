@@ -2,6 +2,11 @@ name: Android release APK (RuStore)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - rustore/native-family-notes
+    paths:
+      - .github/release-trigger.txt
 
 permissions:
   contents: read
