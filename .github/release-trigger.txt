@@ -4,3 +4,5 @@ Family book export syntax validation
 Verify standalone ZIP bridge assertion
 Release build after successful book export verification
 Final ZIP filename follows editable book title
+
+Wax seal refinement build trigger 2026-11-27
