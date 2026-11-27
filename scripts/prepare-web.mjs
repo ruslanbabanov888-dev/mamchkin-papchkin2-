@@ -10,6 +10,7 @@ const files = [
   'index.html',
   'notes-storage.js',
   'printer.js',
+  'book-export.js',
   'time-capsule.js',
   'emblem.png',
   'h-waiting.jpg',
