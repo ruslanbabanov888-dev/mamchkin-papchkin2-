@@ -27,4 +27,11 @@ assert.ok(printer.includes('function completeHtmlDocument')&&printer.includes("n
 assert.ok(printer.includes('Printer.printHtml({ html: readyHtml, name })'),'Native print must receive the normalized complete HTML document');
 const capsule=await readFile(new URL('../time-capsule.js',import.meta.url),'utf8');
 assert.ok(capsule.includes('Первое послание ещё впереди')&&capsule.includes('mp-tc-envelope-art'),'Family book must show an illustrated empty envelope before any letters are sealed');
+assert.ok(printer.includes('value instanceof ArrayBuffer')&&printer.includes('ArrayBuffer.isView(value)'),'ZIP export must preserve binary bytes during Base64 encoding');
+assert.ok(html.includes("allItems.filter(m=>m.type==='image'||m.type==='audio')"),'Daily notes must display saved voice recordings');
+assert.ok(html.includes("mpRecordToggle(\\'note\\'"),'Daily notes must expose a voice-recording control');
+assert.ok(html.includes('accept="image/*,audio/*"'),'Daily notes must accept audio attachments');
+assert.ok(html.includes("filter(m=>m.type==='image'||m.type==='audio')"),'Family books must include audio attached to daily notes');
+const audioPermissions=await readFile(new URL('../scripts/add-android-audio-permissions.mjs',import.meta.url),'utf8');
+assert.ok(audioPermissions.includes('android.permission.RECORD_AUDIO')&&audioPermissions.includes('android.permission.MODIFY_AUDIO_SETTINGS'),'Android builds must declare microphone and audio-routing permissions');
 console.log('Book viewer verification passed.');
