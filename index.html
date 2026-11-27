@@ -1038,7 +1038,7 @@ mpMediaRefresh();
   bar.append(makeButton('Изменить обложку',()=>coverPicker.click()));
   bar.append(coverPicker);
   bar.append(makeButton('Скачать интерактивную книгу',async()=>{
-   const safeName=(filename||'Malенькая-большая-история.html').replace(/[^а-яёa-z0-9._-]+/gi,'-').replace(/\.html$/i,'')+'.zip';
+   const safeName=(filename||'Маленькая-большая-история.html').replace(/[^а-яёa-z0-9._-]+/gi,'-').replace(/\.html$/i,'')+'.zip';
    try{
     const archive=await window.MPBookExport.createZip(renderDoc());
     if(window.MPPrinter?.saveBlob){await window.MPPrinter.saveBlob(archive,safeName,'application/zip');toast('Интерактивная книга подготовлена. Выберите место сохранения');return}
