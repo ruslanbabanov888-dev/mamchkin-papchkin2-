@@ -51,7 +51,7 @@ window.MPPrinter = {
     await Share.share({
       title: name,
       text: 'Семейная книга',
-      url: result.uri,
+      files: [result.uri],
       dialogTitle: 'Сохранить семейную книгу'
     });
     return { saved: true, method: 'android-share' };
