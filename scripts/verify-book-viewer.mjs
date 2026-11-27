@@ -9,13 +9,13 @@ assert.ok(html.includes('<script src="notes-storage.js"></script><script src="pr
 assert.ok(html.includes('window.MPPrinter?.saveHtml'),'Native book saving must use the Android file export bridge');
 assert.ok(html.includes('Переименовать')&&html.includes('Изменить обложку'),'Book title and cover editing controls are missing');
 assert.ok(html.includes('localStorage.setItem(titleKey,currentTitle)')&&html.includes('localStorage.setItem(coverKey,coverData)'),'Book title and cover must persist on device');
-assert.ok(html.includes('.mp-tc-envelope-art')&&html.includes('.mp-tc-seal svg{display:block;width:100%;height:100%}'),'Time-capsule envelope illustration styling is missing from the generated book');
+assert.ok(html.includes('.mp-tc-envelope-art')&&html.includes('mp-family-crest')&&html.includes('Семейный герб'),'Family book must use a text-free heraldic crest');
 assert.ok(html.includes('window.MPPrinter?.printHtml'),'PDF export must use the native printer bridge');
 assert.ok(html.includes('MP_BOOK_TITLE_KEY')&&html.includes('Маленькая большая история'),'Editable family book title is missing');
 assert.ok(html.includes('mpBookPresent(doc,bookTitle)')&&html.includes('mpBookPresent(doc,notesBookTitle)'),'Both books must use the in-app viewer');
 assert.ok(pkg.dependencies['@capgo/capacitor-printer'],'Native printer dependency is missing');
 assert.ok(pkg.dependencies['@capacitor/filesystem']&&pkg.dependencies['@capacitor/share'],'Native file saving dependencies are missing');
 assert.ok(printer.includes("import { Printer } from '@capgo/capacitor-printer'")&&printer.includes('Printer.printHtml'),'Native printer plugin is not wired to its supported API');
-assert.ok(printer.includes('Filesystem.writeFile')&&printer.includes('Share.share'),'Native file export is not implemented');
+assert.ok(printer.includes('Filesystem.writeFile')&&printer.includes('Share.share')&&printer.includes('Directory.Documents'),'Native file export must save into Documents before opening the Android share sheet');
 assert.ok(printer.includes('Encoding.BASE64'),'Exported HTML must be written as a real UTF-8 file, not base64 text');
 console.log('Book viewer verification passed.');
