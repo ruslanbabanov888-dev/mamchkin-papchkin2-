@@ -23,7 +23,9 @@ window.MPBookExport={
  async createZip(html){
   if(typeof html!=='string'||!html.includes('<html'))throw new Error('Содержимое книги не собрано');
   const readme='МАЛЕНЬКАЯ БОЛЬШАЯ ИСТОРИЯ\n\nЭто самостоятельная интерактивная копия семейной книги.\nРаспакуйте архив и откройте index.html в браузере.\nИнтернет и приложение Мамчкин & Папчкин для просмотра не требуются.\nФотографии, видео и аудиозаписи включены в HTML-файл книги.\n';
-  const blob=zipStore([{name:'index.html',data:html},{name:'ПРОЧИТАЙТЕ.txt',data:readme}]);
+  const standalone=html.replace(/<button onclick="parent\\.MPTimeCapsule\\.[^"]*">([^<]*)<\\/button>/g,'<span class="offline-action">$1 · откройте послание в приложении</span>');
+  const complete=standalone.replace('</style>',' .offline-action{display:inline-block;margin:8px;padding:8px 12px;border:1px solid #bd914d;border-radius:14px;color:#d9bd87;font:12px Arial,sans-serif}</style>');
+  const blob=zipStore([{name:'index.html',data:complete},{name:'ПРОЧИТАЙТЕ.txt',data:readme}]);
   if(!blob.size)throw new Error('Не удалось создать ZIP-архив');
   return blob;
  }
