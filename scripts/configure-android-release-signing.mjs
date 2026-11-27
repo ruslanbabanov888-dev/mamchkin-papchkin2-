@@ -12,7 +12,7 @@ if (!androidBlock.test(gradle)) {
   throw new Error("Could not find the android { } block in android/app/build.gradle.");
 }
 
-const signingConfig = \`android {
+const signingConfig = `android {
     signingConfigs {
         release {
             storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
@@ -20,7 +20,7 @@ const signingConfig = \`android {
             keyAlias System.getenv("ANDROID_KEY_ALIAS")
             keyPassword System.getenv("ANDROID_KEY_PASSWORD")
         }
-    }\`;
+    }`;
 
 gradle = gradle.replace(androidBlock, signingConfig);
 
