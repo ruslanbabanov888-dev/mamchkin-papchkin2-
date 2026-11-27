@@ -17,4 +17,5 @@ assert.ok(pkg.dependencies['@capgo/capacitor-printer'],'Native printer dependenc
 assert.ok(pkg.dependencies['@capacitor/filesystem']&&pkg.dependencies['@capacitor/share'],'Native file saving dependencies are missing');
 assert.ok(printer.includes("import { Printer } from '@capgo/capacitor-printer'")&&printer.includes('Printer.printHtml'),'Native printer plugin is not wired to its supported API');
 assert.ok(printer.includes('Filesystem.writeFile')&&printer.includes('Share.share'),'Native file export is not implemented');
+assert.ok(printer.includes('Encoding.BASE64'),'Exported HTML must be written as a real UTF-8 file, not base64 text');
 console.log('Book viewer verification passed.');
