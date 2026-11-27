@@ -7,3 +7,4 @@ Final ZIP filename follows editable book title
 
 Wax seal refinement build trigger 2026-11-27
 Build from merged main: 2026-11-27
+Release after PR #11 merge: family book audio, download and family crest — 2026-11-27
