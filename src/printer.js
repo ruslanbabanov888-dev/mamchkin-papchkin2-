@@ -36,7 +36,8 @@ function completeHtmlDocument(input, name = 'Семейная книга') {
 }
 
 function browserDownload(html, name) {
-  const readyHtml = completeHtmlDocument(html, name);\n  const blob = new Blob([readyHtml], { type: 'text/html;charset=utf-8' });
+  const readyHtml = completeHtmlDocument(html, name);
+  const blob = new Blob([readyHtml], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -49,7 +50,9 @@ function browserDownload(html, name) {
 
 window.MPPrinter = {
   async printHtml(html, name = 'Семейная книга') {
-    const readyHtml = completeHtmlDocument(html, name);\n    if (!readyHtml.includes('<body')) throw new Error('Не удалось подготовить содержимое книги к печати');\n    return Printer.printHtml({ html: readyHtml, name });
+    const readyHtml = completeHtmlDocument(html, name);
+    if (!readyHtml.includes('<body')) throw new Error('Не удалось подготовить содержимое книги к печати');
+    return Printer.printHtml({ html: readyHtml, name });
   },
 
   async saveHtml(html, fileName = 'Семейная книга.html') {
