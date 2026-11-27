@@ -6,7 +6,7 @@ const printer=await readFile(new URL('../src/printer.js',import.meta.url),'utf8'
 assert.ok(html.includes('MP_BOOK_VIEWER_V2'),'In-app book viewer is missing');
 assert.ok(html.includes('Скачать интерактивную книгу')&&!html.includes("bar.append(makeButton('PDF / Печать'"),'Memory book must download as an interactive archive without PDF controls');
 assert.ok(html.includes('<script src="notes-storage.js"></script><script src="printer.js"></script>'),'Printer bridge script tags are not correctly closed/loaded');
-assert.ok(html.includes('window.MPPrinter?.saveHtml'),'Native book saving must use the Android file export bridge');
+assert.ok(html.includes('window.MPPrinter?.saveBlob'),'Native interactive book ZIP saving must use the Android file export bridge');
 assert.ok(html.includes('Переименовать')&&html.includes('Изменить обложку'),'Book title and cover editing controls are missing');
 assert.ok(html.includes('localStorage.setItem(titleKey,currentTitle)')&&html.includes('localStorage.setItem(coverKey,coverData)'),'Book title and cover must persist on device');
 assert.ok(html.includes('.mp-tc-envelope-art')&&html.includes('mp-family-crest')&&html.includes('Семейный герб'),'Family book must use a text-free heraldic crest');
