@@ -7,13 +7,22 @@
   "scripts": {
     "prepare:web": "node scripts/prepare-web.mjs",
     "cap:add:android": "cap add android",
-    "cap:sync": "npm run prepare:web && cap sync android"
+    "cap:sync": "npm run prepare:web && cap sync android",
+    "verify": "node scripts/verify-app.mjs && node scripts/verify-notes-storage.mjs && node scripts/verify-book-viewer.mjs && node scripts/verify-time-capsule.mjs",
+    "verify:supabase": "node scripts/verify-supabase.mjs",
+    "build:notes-storage": "node scripts/build-notes-storage.mjs",
+    "build:printer": "node scripts/build-printer.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.2",
-    "@capacitor/core": "8.6.2"
+    "@capacitor/core": "8.6.2",
+    "@capacitor/preferences": "8.0.1",
+    "@capgo/capacitor-printer": "^8.0.19",
+    "@capacitor/filesystem": "^8.0.1",
+    "@capacitor/share": "^8.0.1"
   },
   "devDependencies": {
-    "@capacitor/cli": "8.6.2"
+    "@capacitor/cli": "8.6.2",
+    "esbuild": "0.28.2"
   }
 }

@@ -1,0 +1,107 @@
+import assert from 'node:assert/strict';
+import { readFile, access } from 'node:fs/promises';
+import vm from 'node:vm';
+
+const read = path => readFile(new URL(path, import.meta.url), 'utf8');
+const html = await read('../index.html');
+const prepare = await read('./prepare-web.mjs');
+const serviceWorker = await read('../sw.js');
+
+const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+let parsedScripts = 0;
+for (const [, attributes, source] of scripts) {
+  if (/\bsrc\s*=/.test(attributes)) continue;
+  if (/type\s*=\s*["']application\/(?:ld\+)?json["']/i.test(attributes)) continue;
+  if (!source.trim()) continue;
+  parsedScripts += 1;
+  new vm.Script(source, { filename: 'index.html:inline-script-' + parsedScripts });
+}
+assert.ok(parsedScripts > 0, 'No inline application scripts were checked');
+
+assert.ok(html.includes('MP_FAMILY_BOOK_V1'), 'Family media/book feature marker is missing');
+assert.ok(html.includes("const MP_MEDIA_DB='mp2-family-media-v1'"), 'Local family media database is missing');
+assert.ok(html.includes("indexedDB.open(MP_MEDIA_DB,1)"), 'Family media must use persistent IndexedDB storage');
+assert.ok(html.includes('async function mpMediaSaveBlob'), 'Media attachment persistence is missing');
+assert.ok(html.includes('async function mpRecordToggle'), 'Voice recording workflow is missing');
+assert.ok(html.includes('async function memBookOpen'), 'Interactive family book export is missing');
+assert.ok(html.includes('window.print()'), 'Family book must offer print-to-PDF');
+assert.ok(html.includes('Собрать семейную книгу'), 'Family book action is missing');
+assert.ok(html.includes("mpMediaHtml('memory',i)"), 'Memory cards must support attached media');
+assert.ok(html.includes("mpMediaHtml('note',n.id)"), 'Family notes must be included with attached media');
+assert.ok(html.includes("mpMediaRefresh();"), 'Stored family media must be indexed on startup');
+assert.ok(html.includes("'+(+a[3]&&!g.tm?'disabled':'')+'"), 'Team and Secret challenge results must wait for manual timer start');
+assert.ok(html.includes("Настроить абонемент</h3>") && !html.includes('Настроить пустые абонементы'), 'Secret coupons must be configured when received, not in a separate setup section');
+
+
+assert.ok(html.includes('async function notesBookOpen()'), 'Standalone notes book builder is missing');
+assert.ok(html.includes('onclick="notesBookOpen()"'), 'Notes screen must expose the notes book action');
+assert.ok(html.includes('Хронология') && html.includes('Segoe Script'), 'Notes book must provide chronological navigation and handwritten dates');
+assert.ok(html.includes('Печать / сохранить PDF'), 'Notes book must offer print-to-PDF');
+assert.ok(html.includes("byOwner[mpOwnerKey('note',n.id)]"), 'Notes book must include media attached to notes');
+assert.ok(html.includes("if(type==='note')return '<div class=\"mp-media-box\""), 'Notes must expose a photo-only attachment control');
+assert.ok(
+  /accept="image\/\*"\s+multiple\s+onchange="mpMediaFiles\(\\?'note\\?'/.test(html),
+  'Notes attachment picker must accept images only'
+);
+assert.ok(html.includes("if(type==='note'&&!blob.type.startsWith('image/'))"), 'Notes media storage must reject non-image files');
+assert.ok(html.includes("if(type==='note')return toast('В заметки можно добавлять только фотографии.')"), 'Voice recording must be disabled for notes');
+
+
+for (const name of ['notesView', 'notesSave', 'notesEdit', 'notesDelete', 'notesPersist', 'notesDateChange']) {
+  assert.ok(html.includes('function ' + name + '('), 'Missing notes function: ' + name);
+}
+assert.ok(html.includes("'mp2_family_notes'"), 'Notes storage key is missing');
+assert.ok(html.includes("const NOTES_STORAGE_KEY='mp2_family_notes_v2'"), 'Versioned notes storage key is missing');
+assert.ok(html.includes('function notesNormalize(items)'), 'Notes schema normalization is missing');
+assert.ok(html.includes('async function notesLoad()'), 'Async notes migration loader is missing');
+assert.ok(html.includes('async function notesPersist()'), 'Async native notes persistence is missing');
+assert.ok(html.includes('window.MPNotesStorage?.isNative'), 'Native Preferences adapter is not selected');
+assert.ok(html.includes('notesInitialization=notesLoad()'), 'Notes startup must initialize storage');
+assert.ok(html.includes('notes-storage.js'), 'Notes storage bridge is not loaded');
+assert.ok(prepare.includes("'notes-storage.js'"), 'prepare-web does not copy the browser fallback bridge');
+assert.ok(html.includes('schemaVersion:1') && html.includes('updatedAt:new Date().toISOString()'), 'Versioned notes envelope is missing');
+const nativeAdapter = await read('../src/notes-storage.js');
+const browserFallback = await read('../notes-storage.js');
+const buildAdapter = await read('./build-notes-storage.mjs');
+assert.ok(nativeAdapter.includes("from '@capacitor/preferences'"), 'Capacitor Preferences adapter is missing');
+assert.ok(nativeAdapter.includes('Preferences.set') && nativeAdapter.includes('Preferences.get'), 'Native adapter must write and verify reads');
+assert.ok(browserFallback.includes('isNative: false'), 'Browser fallback must remain local-only');
+assert.ok(buildAdapter.includes("outfile: 'www/notes-storage.js'"), 'Android adapter bundle output is not configured');
+assert.ok(prepare.includes("'notes-storage.js'"), 'Web preparation must copy the browser bridge');
+assert.ok(html.includes('NOTES_LEGACY_KEY') && html.includes('recovery copy'), 'Legacy notes must remain available as a recovery copy');
+assert.ok(html.includes('function notesValidDate(v)'), 'Strict calendar date validation is missing');
+assert.ok(html.includes('if(!await notesPersist()){familyNotes=previous;return}'), 'Notes must not report success when local persistence fails');
+assert.ok(html.includes("if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v))"), 'Notes date validator is incorrect');
+assert.ok(html.includes('src="notes-calm.webp"'), 'Home lion image is not referenced');
+assert.ok(html.includes('src="notes-dreamer.webp"'), 'Notes lion image is not referenced');
+assert.ok(html.includes('class="mem-big-back"') && html.includes('НАЖМИ, ЧТОБЫ ОТКРЫТЬ'), 'Memory archive must use one large deck back as the main action');
+assert.ok(html.includes("find(i=>!(MM.st[i]|0))"), 'Memory archive must open the next untouched card in order');
+assert.ok(html.includes("A.memList(\\'progress\\')") && html.includes("A.memList(\\'done\\')"), 'Memory archive must expose only the unfinished and completed piles');
+assert.ok(html.includes("A.memStatus('+i+',2)") && html.includes('Отложить'), 'Memory archive must offer one-tap completion and deferral');
+assert.ok(html.includes("MM.st[i]=k===2?2:1"), 'Memory archive must preserve deferred cards in the unfinished pile');
+assert.ok(html.includes('mem-note-details') && html.includes('Добавить заметку к истории'), 'Optional memory notes must remain available without blocking the task flow');
+assert.ok(!html.includes('memSection(') && !html.includes('memSections('), 'Memory archive must not require thematic section navigation');
+
+assert.ok(html.includes('async function loadSharedBaseContent()'), 'Supabase shared-content loader is missing');
+assert.ok(html.includes("content_key=eq.game.base"), 'Base content key is not requested');
+assert.ok(html.includes("published=eq.true"), 'Client must load published content only');
+assert.ok(html.includes('sb_publishable_'), 'Supabase publishable key is missing');
+assert.ok(!html.includes('service_role') && !html.includes('sb_secret_'), 'A privileged Supabase key must never ship in the app');
+assert.ok(html.includes('using bundled game data'), 'Bundled offline fallback is missing');
+assert.ok(html.includes('groups.c.length===30') && html.includes('groups.k.length===20') && html.includes('groups.r.length===20'), 'Remote card payload validation is incomplete');
+const contentMigration = await read('../supabase/migrations/20261124060856_create_app_content.sql');
+const seedMigration = await read('../supabase/migrations/20261124060936_seed_base_game_content.sql');
+assert.ok(contentMigration.includes('enable row level security'), 'Shared content migration must enable RLS');
+assert.ok(contentMigration.includes('grant select on table public.app_content to anon, authenticated'), 'Shared content must grant read-only access');
+assert.ok(contentMigration.includes('revoke all on table public.app_content'), 'Shared content must revoke client writes');
+assert.ok(seedMigration.includes("'game.base', 1"), 'Base content seed migration is missing');
+assert.ok(seedMigration.includes('$content$, true, now())'), 'Base content should be published in a fresh project');
+
+
+for (const asset of ['notes-calm.webp', 'notes-dreamer.webp']) {
+  assert.ok(prepare.includes("'" + asset + "'"), 'prepare-web does not copy ' + asset);
+  assert.ok(serviceWorker.includes("'" + asset + "'"), 'Service worker does not cache ' + asset);
+  await access(new URL('../' + asset, import.meta.url));
+}
+
+console.log('App verification passed: ' + parsedScripts + ' inline script(s), notes CRUD, date validation, and both lion assets.');

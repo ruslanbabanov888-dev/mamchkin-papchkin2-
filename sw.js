@@ -1,7 +1,7 @@
 // Мамчкин и Папчкин — Service Worker
 // Сетевой приоритет для страниц, кеш для статических ресурсов и офлайн-резерв.
 
-const CACHE = 'mamchkin-papchkin-v6';
+const CACHE = 'mamchkin-papchkin-v7';
 const LEGACY_CACHES = ['mamchkin-v3', 'mamchkin-v5'];
 
 const CORE_FILES = [
@@ -18,7 +18,10 @@ const OPTIONAL_FILES = [
   'h-waiting.jpg',
   'h-team.jpg',
   'h-secret.jpg',
-  'h-memories.jpg'
+  'h-memories.jpg',
+  'notes-calm.webp',
+  'notes-dreamer.webp',
+  'notes-storage.js'
 ];
 
 const STATIC_DESTINATIONS = new Set([
