@@ -1,0 +1,74 @@
+name: Android release APK (RuStore)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install dependencies
+        run: npm install
+      - name: Verify app source and local assets
+        run: npm run verify
+      - name: Verify published Supabase content
+        run: npm run verify:supabase
+      - name: Build native printer bridge
+        run: npm run build:printer
+      - name: Prepare web assets
+        run: npm run prepare:web
+      - name: Build native notes storage adapter
+        run: npm run build:notes-storage
+      - name: Add Android platform
+        run: npx cap add android
+      - name: Install app launcher icons
+        run: node scripts/install-android-icon.mjs
+      - name: Sync Capacitor
+        run: npx cap sync android
+      - name: Restore release signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo "Missing ANDROID_KEYSTORE_BASE64 secret"; exit 1; }
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/mamchkin-release.jks"
+          test -s "$RUNNER_TEMP/mamchkin-release.jks"
+      - name: Configure release signing
+        run: node scripts/configure-android-release-signing.mjs
+      - name: Build signed release APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/mamchkin-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_PASSWORD"
+          test -n "$ANDROID_KEY_ALIAS"
+          test -n "$ANDROID_KEY_PASSWORD"
+          ./gradlew assembleRelease
+      - name: Upload signed release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mamchkin-papchkin-rustore-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Remove temporary signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/mamchkin-release.jks"
