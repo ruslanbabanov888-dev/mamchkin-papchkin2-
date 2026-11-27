@@ -989,35 +989,70 @@ mpMediaRefresh();
  const oldMemBookOpen=memBookOpen;
  function mpShowBook(doc,filename){
   const old=document.getElementById('mp-book-overlay');if(old)old.remove();
+  const titleKey='mp-family-book-title-v1',coverKey='mp-family-book-cover-v1';
+  const originalHeading=(doc.match(/<h1>([\\s\\S]*?)<\\/h1>/i)||[])[1]||'Семейная книга';
+  let currentTitle=localStorage.getItem(titleKey)||originalHeading.replace(/<[^>]+>/g,' ').replace(/\\s+/g,' ').trim();
+  let coverData=localStorage.getItem(coverKey)||'';
+  const escBook=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const renderDoc=()=>{
+   const safe=escBook(currentTitle);
+   let out=doc.replace(/<title>[\\s\\S]*?<\\/title>/i,'<title>'+safe+'</title>');
+   out=out.replace(/<h1>[\\s\\S]*?<\\/h1>/i,'<h1>'+safe+'</h1>');
+   if(coverData)out=out.replace(/<header class="cover">/i,'<header class="cover"><img class="mp-custom-cover" src="'+coverData+'" alt="Обложка семейной книги">');
+   out=out.replace('</style>','.mp-custom-cover{display:block;width:min(78vw,360px);height:min(38vh,300px);object-fit:cover;border:3px solid #c49a5c;border-radius:18px;box-shadow:0 12px 30px #0008;margin:0 auto 24px}@media print{.mp-custom-cover{break-inside:avoid}}\\n</style>');
+   return out;
+  };
   const overlay=document.createElement('div');overlay.id='mp-book-overlay';
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:#0b1426;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)';
   const bar=document.createElement('div');bar.style.cssText='display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:10px;background:#101a32;border-bottom:1px solid #c49a5c';
   const makeButton=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.style.cssText='border:1px solid #d6b77b;border-radius:22px;padding:10px 15px;background:#c49a5c;color:#101a32;font-weight:700';b.addEventListener('click',fn);return b};
   const frame=document.createElement('iframe');frame.title='Предпросмотр семейной книги';frame.style.cssText='border:0;background:#f4f0e8;flex:1;width:100%;min-height:0';
   bar.append(makeButton('Закрыть книгу',()=>overlay.remove()));
+  bar.append(makeButton('Переименовать',()=>{
+   const next=prompt('Новое название книги',currentTitle);
+   if(next===null)return;
+   const value=next.trim().slice(0,80);
+   if(!value){toast('Название не должно быть пустым');return}
+   currentTitle=value;
+   try{localStorage.setItem(titleKey,currentTitle);filename=currentTitle.replace(/[^а-яёa-z0-9._-]+/gi,'-')+'.html';frame.srcdoc=renderDoc();toast('Название книги сохранено')}
+   catch(e){console.error(e);toast('Не удалось сохранить название книги')}
+  }));
+  const coverPicker=document.createElement('input');coverPicker.type='file';coverPicker.accept='image/*';coverPicker.hidden=true;
+  coverPicker.addEventListener('change',()=>{
+   const file=coverPicker.files&&coverPicker.files[0];if(!file)return;
+   if(!file.type.startsWith('image/')){toast('Выберите изображение');return}
+   const url=URL.createObjectURL(file),img=new Image();
+   img.onload=()=>{
+    try{
+     const scale=Math.min(1,1200/Math.max(img.naturalWidth,img.naturalHeight));
+     const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+     canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+     coverData=canvas.toDataURL('image/jpeg',0.82);
+     localStorage.setItem(coverKey,coverData);frame.srcdoc=renderDoc();toast('Обложка сохранена');
+    }catch(e){console.error(e);toast('Не удалось сохранить изображение. Попробуйте другое фото')}
+    finally{URL.revokeObjectURL(url);coverPicker.value=''}
+   };
+   img.onerror=()=>{URL.revokeObjectURL(url);toast('Не удалось открыть выбранное изображение')};
+   img.src=url;
+  });
+  bar.append(makeButton('Изменить обложку',()=>coverPicker.click()));
+  bar.append(coverPicker);
   bar.append(makeButton('Скачать книгу',async()=>{
    const safeName=(filename||'family-book.html').replace(/[^а-яёa-z0-9._-]+/gi,'-');
    try{
-    const file=new File([doc],safeName,{type:'text/html;charset=utf-8'});
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-     await navigator.share({files:[file],title:safeName,text:'Семейная книга'});
-     toast('Открылось меню отправки. Выберите сохранение файла на устройство.');
-     return;
-    }
-    const blob=new Blob([doc],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-    a.href=url;a.download=safeName;document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),60000);
-    toast('Если загрузка не началась, используйте системное меню «Поделиться».');
-   }catch(e){if(e&&e.name==='AbortError')return;console.error(e);toast('Не удалось передать книгу для сохранения. Попробуйте PDF.')}
+    if(window.MPPrinter?.saveHtml){await window.MPPrinter.saveHtml(renderDoc(),safeName);toast('Книга передана в системное меню сохранения');return}
+    const blob=new Blob([renderDoc()],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=safeName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);toast('Загрузка книги начата');
+   }catch(e){if(e&&e.name==='AbortError')return;console.error(e);toast('Не удалось сохранить книгу. Попробуйте PDF')}
   }));
   bar.append(makeButton('PDF / Печать',async()=>{
    try{
-    if(window.MPPrinter?.printHtml){await window.MPPrinter.printHtml(doc,(filename||'Семейная книга').replace(/\.html$/i,''));}
-    else{toast('Модуль печати не загрузился. Перезапустите приложение и попробуйте снова.')}
-   }catch(e){console.error(e);toast('Не удалось открыть системное сохранение PDF.')}
+    if(window.MPPrinter?.printHtml){await window.MPPrinter.printHtml(renderDoc(),(filename||'Семейная книга').replace(/\\.html$/i,''));}
+    else{toast('Модуль печати не загрузился. Перезапустите приложение и попробуйте снова')}
+   }catch(e){console.error(e);toast('Не удалось открыть системное сохранение PDF')}
   }));
-  overlay.append(bar,frame);document.body.appendChild(overlay);frame.srcdoc=doc;
+  overlay.append(bar,frame);document.body.appendChild(overlay);frame.srcdoc=renderDoc();
  }
+
  async function mpBookMediaMarkup(list){
   let out='';
   for(const m of list||[]){
