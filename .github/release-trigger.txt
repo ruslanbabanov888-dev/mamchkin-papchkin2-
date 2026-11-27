@@ -1,3 +1,1 @@
-Rebuild after native export, editable family-book title and cover, family emblem, and sealed time-capsule envelope updates.
-
-Visual fix: heraldic cover, illustrated envelope, and Documents export.
+Rebuild after family book PDF and envelope fixes: 2026-11-27T08:49:46.690Z
