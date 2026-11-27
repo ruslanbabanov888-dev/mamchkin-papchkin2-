@@ -18,4 +18,8 @@ assert.ok(pkg.dependencies['@capacitor/filesystem']&&pkg.dependencies['@capacito
 assert.ok(printer.includes("import { Printer } from '@capgo/capacitor-printer'")&&printer.includes('Printer.printHtml'),'Native printer plugin is not wired to its supported API');
 assert.ok(printer.includes('Filesystem.writeFile')&&printer.includes('Share.share')&&printer.includes('Directory.Documents'),'Native file export must save into Documents before opening the Android share sheet');
 assert.ok(printer.includes('Encoding.BASE64'),'Exported HTML must be written as a real UTF-8 file, not base64 text');
+assert.ok(printer.includes('function completeHtmlDocument')&&printer.includes("new DOMParser().parseFromString(source, 'text/html')"),'HTML exports must be normalized into a complete printable document');
+assert.ok(printer.includes('Printer.printHtml({ html: readyHtml, name })'),'Native print must receive the normalized complete HTML document');
+const capsule=await readFile(new URL('../time-capsule.js',import.meta.url),'utf8');
+assert.ok(capsule.includes('Первое послание ещё впереди')&&capsule.includes('mp-tc-envelope-art'),'Family book must show an illustrated empty envelope before any letters are sealed');
 console.log('Book viewer verification passed.');
