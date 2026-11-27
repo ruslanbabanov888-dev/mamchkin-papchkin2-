@@ -38,7 +38,7 @@ assert.ok(html.includes('onclick="notesBookOpen()"'), 'Notes screen must expose 
 assert.ok(html.includes('Хронология') && html.includes('Segoe Script'), 'Notes book must provide chronological navigation and handwritten dates');
 assert.ok(html.includes('Печать / сохранить PDF'), 'Notes book must offer print-to-PDF');
 assert.ok(html.includes("byOwner[mpOwnerKey('note',n.id)]"), 'Notes book must include media attached to notes');
-assert.ok(html.includes("if(type==='note')return '<div class=\\"mp-media-box\\""), 'Notes must expose media controls');
+assert.ok(html.includes('＋ Добавить фото или аудио'), 'Notes must expose media controls');
 assert.ok(html.includes('accept="image/*,audio/*"'), 'Notes attachment picker must accept images and audio');
 assert.ok(html.includes("if(type==='note'&&!(blob.type.startsWith('image/')||blob.type.startsWith('audio/')))"), 'Notes media storage must allow images and audio only');
 assert.ok(html.includes("mpRecordToggle(\\'note\\'"), 'Voice recording must be available for notes');
