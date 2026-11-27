@@ -5,7 +5,7 @@ import { Capacitor } from '@capacitor/core';
 
 function safeFileName(value) {
   const clean = String(value || 'Семейная книга').replace(/[\\/:*?"<>|]+/g, '-').trim().slice(0, 90) || 'Семейная книга';
-  return /\\.html$/i.test(clean) ? clean : clean + '.html';
+  return /\.html$/i.test(clean) ? clean : clean + '.html';
 }
 
 function toBase64(text) {
@@ -44,7 +44,7 @@ window.MPPrinter = {
     const result = await Filesystem.writeFile({
       path: name,
       data: toBase64(html),
-      directory: Directory.Cache,
+      directory: Directory.Documents,
       encoding: Encoding.BASE64,
       recursive: true
     });
@@ -52,7 +52,7 @@ window.MPPrinter = {
       title: name,
       text: 'Семейная книга',
       files: [result.uri],
-      dialogTitle: 'Сохранить семейную книгу'
+      dialogTitle: 'Сохранить семейную книгу в файлы или отправить'
     });
     return { saved: true, method: 'android-share' };
   }
