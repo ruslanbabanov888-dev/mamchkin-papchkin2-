@@ -18,8 +18,25 @@ function toBase64(text) {
   return btoa(binary);
 }
 
+function completeHtmlDocument(input, name = 'Семейная книга') {
+  const source = String(input || '');
+  const parsed = new DOMParser().parseFromString(source, 'text/html');
+  parsed.documentElement.lang = parsed.documentElement.lang || 'ru';
+  if (!parsed.querySelector('meta[charset]')) {
+    const charset = parsed.createElement('meta');
+    charset.setAttribute('charset', 'utf-8');
+    parsed.head.prepend(charset);
+  }
+  if (!parsed.title) parsed.title = String(name || 'Семейная книга');
+  parsed.querySelectorAll('script').forEach(node => node.remove());
+  const printStyle = parsed.createElement('style');
+  printStyle.textContent = '@page{size:A4;margin:14mm}html,body{height:auto!important;min-height:0!important}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}img,video,figure,article,section{break-inside:avoid}';
+  parsed.head.appendChild(printStyle);
+  return '<!doctype html>\\n' + parsed.documentElement.outerHTML;
+}
+
 function browserDownload(html, name) {
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const readyHtml = completeHtmlDocument(html, name);\n  const blob = new Blob([readyHtml], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -32,7 +49,7 @@ function browserDownload(html, name) {
 
 window.MPPrinter = {
   async printHtml(html, name = 'Семейная книга') {
-    return Printer.printHtml({ html, name });
+    const readyHtml = completeHtmlDocument(html, name);\n    if (!readyHtml.includes('<body')) throw new Error('Не удалось подготовить содержимое книги к печати');\n    return Printer.printHtml({ html: readyHtml, name });
   },
 
   async saveHtml(html, fileName = 'Семейная книга.html') {
@@ -43,7 +60,7 @@ window.MPPrinter = {
     }
     const result = await Filesystem.writeFile({
       path: name,
-      data: toBase64(html),
+      data: toBase64(completeHtmlDocument(html, name)),
       directory: Directory.Documents,
       encoding: Encoding.BASE64,
       recursive: true
