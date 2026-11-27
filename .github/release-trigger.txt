@@ -1,3 +1,4 @@
 Rebuild after family book PDF and envelope fixes: 2026-11-27T08:49:46.690Z
 Family book cover and standalone ZIP export — validation build
 Family book export syntax validation
+Verify standalone ZIP bridge assertion
