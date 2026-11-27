@@ -49,6 +49,21 @@ function browserDownload(html, name) {
 }
 
 window.MPPrinter = {
+  async saveBlob(blob, fileName = 'Семейная книга.zip', mimeType = 'application/zip') {
+    const name = String(fileName || 'Семейная книга.zip').replace(/[\\/:*?"<>|]+/g, '-').slice(0, 100);
+    if (!(blob instanceof Blob)) throw new TypeError('Ожидался файл для сохранения');
+    if (!Capacitor.isNativePlatform()) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      return { saved: true, method: 'browser-download' };
+    }
+    const data = toBase64(new Uint8Array(await blob.arrayBuffer()));
+    const result = await Filesystem.writeFile({ path: name, data, directory: Directory.Documents, encoding: Encoding.BASE64, recursive: true });
+    await Share.share({ title: name, text: 'Интерактивная семейная книга', files: [result.uri], dialogTitle: 'Сохранить интерактивную книгу' });
+    return { saved: true, method: 'android-share' };
+  },
   async printHtml(html, name = 'Семейная книга') {
     const readyHtml = completeHtmlDocument(html, name);
     if (!readyHtml.includes('<body')) throw new Error('Не удалось подготовить содержимое книги к печати');
