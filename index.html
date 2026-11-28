@@ -995,8 +995,8 @@ mpMediaRefresh();
   const escBook=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const renderDoc=()=>{
    const safe=escBook(currentTitle);
-   let out=doc.replace(/<title>[\s\\S]*?<\/title>/i,'<title>'+safe+'</title>');
-   out=out.replace(/<h1>[\s\\S]*?<\/h1>/i,'<h1>'+safe+'</h1>');
+   let out=doc.replace(/<title>[\s\S]*?<\/title>/i,'<title>'+safe+'</title>');
+   out=out.replace(/<h1>[\s\S]*?<\/h1>/i,'<h1>'+safe+'</h1>');
    return window.MPBookViewer?.decorate(out,{title:currentTitle,photo:coverData})||out;
   };
   const overlay=document.createElement('div');overlay.id='mp-book-overlay';
