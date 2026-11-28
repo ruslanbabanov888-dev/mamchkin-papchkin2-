@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 const pkg=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
 const printer=await readFile(new URL('../src/printer.js',import.meta.url),'utf8');
+const prepare=await readFile(new URL('./prepare-web.mjs',import.meta.url),'utf8');
 assert.ok(html.includes('MP_BOOK_VIEWER_V2'),'In-app book viewer is missing');
 assert.ok(html.includes('Скачать интерактивную книгу')&&!html.includes("bar.append(makeButton('PDF / Печать'"),'Memory book must download as an interactive archive without PDF controls');
 assert.ok(html.includes('<script src="notes-storage.js"></script><script src="printer.js"></script>'),'Printer bridge script tags are not correctly closed/loaded');
