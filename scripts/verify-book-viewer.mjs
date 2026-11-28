@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { Script, runInNewContext } from 'node:vm';
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 const pkg=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
 const printer=await readFile(new URL('../src/printer.js',import.meta.url),'utf8');
@@ -43,6 +44,12 @@ assert.ok(html.includes("filter(m=>m.type==='image'||m.type==='audio')"),'Family
 const audioPermissions=await readFile(new URL('../scripts/add-android-audio-permissions.mjs',import.meta.url),'utf8');
 assert.ok(audioPermissions.includes('android.permission.RECORD_AUDIO')&&audioPermissions.includes('android.permission.MODIFY_AUDIO_SETTINGS'),'Android builds must declare microphone and audio-routing permissions');
 assert.ok(bookViewer.includes('MP_INTERACTIVE_BOOKS_V2'),'Updated interactive book viewer is missing');
+const viewerSandbox={window:{},DOMParser:class{parseFromString(){return {title:'Тестовая книга',querySelector(){return null},querySelectorAll(){return []}}}}};
+runInNewContext(bookViewer,viewerSandbox);
+const generatedViewer=viewerSandbox.window.MPBookViewer.decorate('<!doctype html><html><head><title>Тестовая книга</title></head><body></body></html>',{title:'Тестовая книга'});
+const embeddedViewerScript=(generatedViewer.match(/<script>([\\s\\S]*?)<\\/script>/)||[])[1];
+assert.ok(embeddedViewerScript,'Interactive viewer must generate its page-turning script');
+new Script(embeddedViewerScript,{filename:'generated-book-viewer.js'});
 assert.ok(bookViewer.includes('prefers-reduced-motion: reduce')&&bookViewer.includes('reducedMotion()'),'Book viewer must respect the system reduced-motion preference');
 assert.ok(bookViewer.includes('animationEnabled=!animationEnabled')&&bookViewer.includes('mp-book-animation-'),'Book viewer must expose a persistent manual animation toggle');
 assert.ok(bookViewer.includes('mp-book-bookmarks-')&&bookViewer.includes('mp-book-favorites-'),'Bookmarks and favorites must use separate per-book storage keys');
