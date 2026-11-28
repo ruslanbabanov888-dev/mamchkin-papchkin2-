@@ -41,4 +41,12 @@ assert.ok(html.includes('accept="image/*,audio/*"'),'Daily notes must accept aud
 assert.ok(html.includes("filter(m=>m.type==='image'||m.type==='audio')"),'Family books must include audio attached to daily notes');
 const audioPermissions=await readFile(new URL('../scripts/add-android-audio-permissions.mjs',import.meta.url),'utf8');
 assert.ok(audioPermissions.includes('android.permission.RECORD_AUDIO')&&audioPermissions.includes('android.permission.MODIFY_AUDIO_SETTINGS'),'Android builds must declare microphone and audio-routing permissions');
+assert.ok(bookViewer.includes('MP_INTERACTIVE_BOOKS_V2'),'Updated interactive book viewer is missing');
+assert.ok(bookViewer.includes('prefers-reduced-motion: reduce')&&bookViewer.includes('reducedMotion()'),'Book viewer must respect the system reduced-motion preference');
+assert.ok(bookViewer.includes('animationEnabled=!animationEnabled')&&bookViewer.includes('mp-book-animation-'),'Book viewer must expose a persistent manual animation toggle');
+assert.ok(bookViewer.includes('mp-book-bookmarks-')&&bookViewer.includes('mp-book-favorites-'),'Bookmarks and favorites must use separate per-book storage keys');
+assert.ok(bookViewer.includes('data-mark="bookmark"')&&bookViewer.includes('data-mark="favorite"'),'Contents must expose independent bookmark and favorite actions');
+assert.ok(bookViewer.includes('data-filter="bookmarks"')&&bookViewer.includes('data-filter="favorites"'),'Contents must expose separate bookmark and favorite filters');
+assert.ok(bookViewer.includes('writeMarks(')&&bookViewer.includes('readMarks('),'Bookmarks and favorites must persist and restore on device');
+assert.ok(html.includes('MPBookViewer?.decorate(out,{title:currentTitle,photo:coverData})'),'Both book previews and exports must use the interactive viewer with the saved cover photo');
 console.log('Book viewer verification passed.');
