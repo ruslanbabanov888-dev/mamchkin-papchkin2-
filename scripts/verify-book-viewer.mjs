@@ -9,7 +9,10 @@ assert.ok(html.includes('<script src="notes-storage.js"></script><script src="pr
 assert.ok(html.includes('window.MPPrinter?.saveBlob'),'Native interactive book ZIP saving must use the Android file export bridge');
 assert.ok(html.includes('Переименовать')&&html.includes('Изменить обложку'),'Book title and cover editing controls are missing');
 assert.ok(html.includes('localStorage.setItem(titleKey,currentTitle)')&&html.includes('localStorage.setItem(coverKey,coverData)'),'Book title and cover must persist on device');
-assert.ok(html.includes('.mp-tc-envelope-art')&&html.includes('mp-family-crest')&&html.includes('Семейный герб'),'Family book must use a text-free heraldic crest');
+const bookViewer=await readFile(new URL('../book-viewer.js',import.meta.url),'utf8');
+assert.ok(html.includes('book-viewer.js')&&bookViewer.includes('МЕСТО ДЛЯ ФОТО')&&bookViewer.includes('МАЛЕНЬКАЯ')&&bookViewer.includes('БОЛЬШАЯ'),'Approved cream family-book cover and editable photo frame are missing');
+assert.ok(bookViewer.includes('touchstart')&&bookViewer.includes('ArrowRight')&&bookViewer.includes('toc-row')&&bookViewer.includes('localStorage.setItem'),'Interactive page turning, contents search and last-page persistence are missing');
+assert.ok(bookViewer.includes('summary:n.textContent'),'Contents search must index entry text, not only titles');
 assert.ok(html.includes('window.MPPrinter?.printHtml'),'PDF export must use the native printer bridge');
 assert.ok(html.includes('MP_BOOK_TITLE_KEY')&&html.includes('Маленькая большая история'),'Editable family book title is missing');
 assert.ok(html.includes('mpBookPresent(doc,bookTitle)')&&html.includes('mpBookPresent(doc,notesBookTitle)'),'Both books must use the in-app viewer');
