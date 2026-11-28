@@ -988,7 +988,7 @@ mpMediaRefresh();
  const oldMemBookOpen=memBookOpen;
  function mpShowBook(doc,filename){
   const old=document.getElementById('mp-book-overlay');if(old)old.remove();
-  const titleKey='mp-family-book-title-v1',coverKey='mp-family-book-cover-v1';
+  const isNotesBook=/Kniga-zametok/i.test(filename);const titleKey=isNotesBook?'mp-notes-book-title-v1':'mp-family-book-title-v1',coverKey=isNotesBook?'mp-notes-book-cover-v1':'mp-family-book-cover-v1';
   const originalHeading=(doc.match(/<h1>([\s\S]*?)<\/h1>/i)||[])[1]||'Семейная книга';
   let currentTitle=localStorage.getItem(titleKey)||originalHeading.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
   let coverData=localStorage.getItem(coverKey)||'';
