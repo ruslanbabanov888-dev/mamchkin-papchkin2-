@@ -24,6 +24,9 @@ assert.ok(printer.includes('Filesystem.writeFile')&&printer.includes('Share.shar
 assert.ok(printer.includes('async saveBlob('),'ZIP archive export must use native file sharing');
 const exporter=await readFile(new URL('../book-export.js',import.meta.url),'utf8');
 assert.ok(exporter.includes('createZip')&&exporter.includes('index.html'),'Standalone book ZIP exporter is missing');
+assert.ok(bookViewer.includes('rotateY(-13deg)')&&bookViewer.includes('turn-next')&&bookViewer.includes('turn-prev'),'Book pages must have a visible 3D turning animation');
+assert.ok(exporter.includes("querySelectorAll('img[src],video[src],audio[src],source[src]')")&&exporter.includes("src.startsWith('data:')"),'Offline ZIP export must reject media that is not embedded in the HTML');
+assert.ok(exporter.includes('Исходные записи на устройстве не изменяются'),'Offline ZIP export must preserve source records');
 assert.ok(html.includes('Наша история. От ожидания до первых открытий')&&html.includes('Как мы ждали, встречали и росли вместе'),'Approved family book cover text is missing');
 assert.ok(html.includes('single-crown')&&html.includes('МАМЧКИН &amp; ПАПЧКИН'),'Single crown must appear above the game title');
 assert.ok(printer.includes('Encoding.BASE64'),'Exported HTML must be written as a real UTF-8 file, not base64 text');
