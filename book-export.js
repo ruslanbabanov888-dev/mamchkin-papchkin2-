@@ -22,8 +22,11 @@ function zipStore(files){
 window.MPBookExport={
  async createZip(html){
   if(typeof html!=='string'||!html.includes('<html'))throw new Error('Содержимое книги не собрано');
-  const readme='МАЛЕНЬКАЯ БОЛЬШАЯ ИСТОРИЯ\n\nЭто самостоятельная интерактивная копия семейной книги.\nРаспакуйте архив и откройте index.html в браузере.\nИнтернет и приложение Мамчкин & Папчкин для просмотра не требуются.\nФотографии, видео и аудиозаписи включены в HTML-файл книги.\n';
   const parsed=new DOMParser().parseFromString(html,'text/html');
+  const title=(parsed.querySelector('title')?.textContent||'Семейная книга').trim();
+  const media=parsed.querySelectorAll('img[src],video[src],audio[src],source[src]');
+  for(const item of media){const src=item.getAttribute('src')||'';if(src&&!src.startsWith('data:'))throw new Error('В книге найдено внешнее медиа, не включённое в офлайн-копию: '+src.slice(0,100))}
+  const readme=title+'\\n\\nЭто самостоятельная интерактивная копия семейной книги.\\nРаспакуйте архив и откройте index.html в современном браузере.\\nИнтернет и приложение Мамчкин & Папчкин для просмотра не требуются.\\nФотографии, видео и аудиозаписи встроены в HTML-файл книги.\\nИсходные записи на устройстве не изменяются.\\n';
   parsed.querySelectorAll('button[onclick*="MPTimeCapsule"]').forEach(button=>{
    const note=parsed.createElement('span');
    note.className='offline-action';

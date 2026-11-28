@@ -11,6 +11,7 @@ const files = [
   'notes-storage.js',
   'printer.js',
   'book-export.js',
+  'book-viewer.js',
   'time-capsule.js',
   'emblem.png',
   'h-waiting.jpg',
