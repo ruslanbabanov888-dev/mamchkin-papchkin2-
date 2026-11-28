@@ -12,6 +12,7 @@ assert.ok(html.includes('localStorage.setItem(titleKey,currentTitle)')&&html.inc
 const bookViewer=await readFile(new URL('../book-viewer.js',import.meta.url),'utf8');
 assert.ok(html.includes('book-viewer.js')&&bookViewer.includes('МЕСТО ДЛЯ ФОТО')&&bookViewer.includes('МАЛЕНЬКАЯ')&&bookViewer.includes('БОЛЬШАЯ'),'Approved cream family-book cover and editable photo frame are missing');
 assert.ok(bookViewer.includes('touchstart')&&bookViewer.includes('ArrowRight')&&bookViewer.includes('toc-row')&&bookViewer.includes('localStorage.setItem'),'Interactive page turning, contents search and last-page persistence are missing');
+assert.ok(bookViewer.includes("const coverHeading=isNotes?'КНИГА")&&bookViewer.includes("title==='Маленькая большая история'"),'Notes and memory books must have independent dynamic cover titles');
 assert.ok(bookViewer.includes('summary:n.textContent'),'Contents search must index entry text, not only titles');
 assert.ok(html.includes('window.MPPrinter?.printHtml'),'PDF export must use the native printer bridge');
 assert.ok(html.includes('MP_BOOK_TITLE_KEY')&&html.includes('Маленькая большая история'),'Editable family book title is missing');
