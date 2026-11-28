@@ -13,6 +13,7 @@ on:
       - rustore/rose-gold-icon-fix
       - rustore/selected-cinematic-music
       - rustore/native-family-notes
+      - feature/interactive-memory-books
 
 permissions:
   contents: read
