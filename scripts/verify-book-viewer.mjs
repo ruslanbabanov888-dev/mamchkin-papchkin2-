@@ -47,7 +47,7 @@ assert.ok(bookViewer.includes('MP_INTERACTIVE_BOOKS_V2'),'Updated interactive bo
 const viewerSandbox={window:{},DOMParser:class{parseFromString(){return {title:'Тестовая книга',querySelector(){return null},querySelectorAll(){return []}}}}};
 runInNewContext(bookViewer,viewerSandbox);
 const generatedViewer=viewerSandbox.window.MPBookViewer.decorate('<!doctype html><html><head><title>Тестовая книга</title></head><body></body></html>',{title:'Тестовая книга'});
-const embeddedViewerScript=(generatedViewer.match(/<script>([\\s\\S]*?)<\\/script>/)||[])[1];
+const embeddedViewerScript=(generatedViewer.match(/<script>([\s\S]*?)<\/script>/)||[])[1];
 assert.ok(embeddedViewerScript,'Interactive viewer must generate its page-turning script');
 new Script(embeddedViewerScript,{filename:'generated-book-viewer.js'});
 assert.ok(bookViewer.includes('prefers-reduced-motion: reduce')&&bookViewer.includes('reducedMotion()'),'Book viewer must respect the system reduced-motion preference');
