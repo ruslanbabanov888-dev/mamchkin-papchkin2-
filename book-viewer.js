@@ -10,11 +10,11 @@ function decorate(source,opts){
  pages.push({kind:'cover',title:'Обложка',html:cover});
  if(isNotes){
   const idx=d.querySelector('.index');if(idx)pages.push({kind:'toc',title:'Содержание',html:'<section class="paper toc"><h2>Содержание</h2><p>Поиск по дате или названию</p><input id="q" placeholder="Найти запись…"><div id="toc"></div></section>'});
-  d.querySelectorAll('article.page').forEach((n,i)=>pages.push({kind:'content',title:(n.querySelector('h2')||{}).textContent||'Запись '+(i+1),date:(n.querySelector('.date')||{}).textContent||'',summary:n.textContent.replace(/\\s+/g,' ').trim().slice(0,220),html:n.outerHTML}));
+  d.querySelectorAll('article.page').forEach((n,i)=>pages.push({kind:'content',title:(n.querySelector('h2')||{}).textContent||'Запись '+(i+1),date:(n.querySelector('.date')||{}).textContent||'',summary:n.textContent.replace(/\s+/g,' ').trim().slice(0,220),html:n.outerHTML}));
  }else{
   d.querySelectorAll('section.chapter, .mp-tc-book, .journal, footer.end').forEach((n,i)=>{
-   if(n.classList.contains('journal')){n.querySelectorAll(':scope > .story').forEach((s,j)=>pages.push({kind:'content',title:(s.querySelector('h3')||{}).textContent||'Заметка '+(j+1),date:(s.querySelector('.story-date')||{}).textContent||'',summary:s.textContent.replace(/\\s+/g,' ').trim().slice(0,220),html:'<section class="paper">'+s.outerHTML+'</section>'}));}
-   else pages.push({kind:'content',title:(n.querySelector('h2,h3')||{}).textContent||'История '+(i+1),date:(n.querySelector('.story-date')||{}).textContent||'',summary:n.textContent.replace(/\\s+/g,' ').trim().slice(0,220),html:'<section class="paper">'+n.outerHTML+'</section>'});
+   if(n.classList.contains('journal')){n.querySelectorAll(':scope > .story').forEach((s,j)=>pages.push({kind:'content',title:(s.querySelector('h3')||{}).textContent||'Заметка '+(j+1),date:(s.querySelector('.story-date')||{}).textContent||'',summary:s.textContent.replace(/\s+/g,' ').trim().slice(0,220),html:'<section class="paper">'+s.outerHTML+'</section>'}));}
+   else pages.push({kind:'content',title:(n.querySelector('h2,h3')||{}).textContent||'История '+(i+1),date:(n.querySelector('.story-date')||{}).textContent||'',summary:n.textContent.replace(/\s+/g,' ').trim().slice(0,220),html:'<section class="paper">'+n.outerHTML+'</section>'});
   });
  }
  if(!isNotes)pages.splice(1,0,{kind:'toc',title:'Содержание',html:''});
