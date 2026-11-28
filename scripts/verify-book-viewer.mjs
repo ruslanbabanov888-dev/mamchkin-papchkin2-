@@ -49,4 +49,5 @@ assert.ok(bookViewer.includes('data-mark="bookmark"')&&bookViewer.includes('data
 assert.ok(bookViewer.includes('data-filter="bookmarks"')&&bookViewer.includes('data-filter="favorites"'),'Contents must expose separate bookmark and favorite filters');
 assert.ok(bookViewer.includes('writeMarks(')&&bookViewer.includes('readMarks('),'Bookmarks and favorites must persist and restore on device');
 assert.ok(html.includes('MPBookViewer?.decorate(out,{title:currentTitle,photo:coverData})'),'Both book previews and exports must use the interactive viewer with the saved cover photo');
+assert.ok(prepare.includes("'book-viewer.js'"),'Android WebView preparation must package the interactive book viewer');
 console.log('Book viewer verification passed.');
